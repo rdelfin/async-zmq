@@ -1,29 +1,19 @@
+use std::collections::VecDeque;
 use std::io;
+
 use mio::unix::EventedFd;
 use mio::{Evented, Poll, PollOpt, Ready, Token};
-use zmq::Socket;
+use zmq::{Message, Socket};
 
-pub struct MioSocket(Socket);
+pub struct ZmqSocket(pub Socket);
 
-impl MioSocket {
+impl ZmqSocket {
     pub fn new(socket: Socket) -> Self {
         Self(socket)
     }
 }
 
-impl From<Socket> for MioSocket {
-    fn from(socket: Socket) -> Self {
-        Self(socket)
-    }
-}
-
-impl From<MioSocket> for Socket {
-    fn from(socket: MioSocket) -> Self {
-        socket.0
-    }
-}
-
-impl Evented for MioSocket {
+impl Evented for ZmqSocket {
     fn register(
         &self,
         poll: &Poll,
@@ -48,3 +38,5 @@ impl Evented for MioSocket {
         EventedFd(&self.0.get_fd()?).deregister(poll)
     }
 }
+
+pub type MessageBuf = VecDeque<Message>;
