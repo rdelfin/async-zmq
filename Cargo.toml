@@ -1,6 +1,6 @@
 [package]
-name = "async-zmq"
-version = "0.0.1"
+name = "async_zmq"
+version = "0.0.2"
 authors = ["Yu-Wei Wu <wusyong9104@gmail.com>"]
 edition = "2018"
 description = "WIP"
