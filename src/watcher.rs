@@ -1,5 +1,5 @@
 // TODO: async-std doesn't expose watcher at the moment. Remove this file. once our events are able to add to register.
-
+#![allow(dead_code)]
 use std::fmt;
 use std::sync::{Arc, Mutex};
 
