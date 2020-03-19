@@ -12,6 +12,12 @@ use crate::watcher::Watcher;
 pub type MessageBuf = VecDeque<Message>;
 pub(crate) type ZmqSocket = Watcher<evented::ZmqSocket>;
 
+impl From<zmq::Socket> for ZmqSocket {
+    fn from(socket: zmq::Socket) -> Self {
+        Watcher::new(evented::ZmqSocket(socket))
+    }
+}
+
 impl ZmqSocket {
     pub fn send(&self, cx: &mut Context<'_>, buffer: &mut MessageBuf) -> Poll<Result<(), Error>> {
         ready!(self.poll_write_ready(cx));
