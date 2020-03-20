@@ -1,6 +1,6 @@
 use zmq::{Context, SocketType, Result};
 
-use crate::socket::{Reciever, ZmqSocket};
+use crate::socket::{Reciever, ZmqSocket, AsRaw};
 
 pub fn subscribe(endpoint: &str) -> Result<Subscribe> {
     let socket = Context::new()
@@ -8,21 +8,31 @@ pub fn subscribe(endpoint: &str) -> Result<Subscribe> {
     
     socket.connect(endpoint)?;
     
-    Ok(Subscribe(
-        Reciever {
-            socket: ZmqSocket::from(socket)
-        }
-    ))
+    Ok(Subscribe::from(socket))
 }
 
 pub struct Subscribe(Reciever);
 
+impl AsRaw for Subscribe {
+    fn as_raw_socket(&self) -> &zmq::Socket {
+        &self.0.socket.get_ref().0
+    }
+}
+
+impl From<zmq::Socket> for Subscribe {
+    fn from(socket: zmq::Socket) -> Self {
+        Self(Reciever {
+            socket: ZmqSocket::from(socket)
+        })
+    }
+}
+
 impl Subscribe {
     pub fn subscribe(&self, topic: &str) -> Result<()> {
-        self.0.socket.get_ref().0.set_subscribe(topic.as_bytes())
+        self.as_raw_socket().set_subscribe(topic.as_bytes())
     }
 
     pub fn unsubscribe(&self, topic: &str) -> Result<()> {
-        self.0.socket.get_ref().0.set_unsubscribe(topic.as_bytes())
+        self.as_raw_socket().set_unsubscribe(topic.as_bytes())
     }
 }

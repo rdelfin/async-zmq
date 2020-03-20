@@ -12,6 +12,16 @@ use crate::watcher::Watcher;
 pub type MessageBuf = VecDeque<Message>;
 pub(crate) type ZmqSocket = Watcher<evented::ZmqSocket>;
 
+pub trait AsRaw {
+    fn as_raw_socket(&self) -> &zmq::Socket;
+}
+
+impl AsRaw for ZmqSocket {
+    fn as_raw_socket(&self) -> &zmq::Socket {
+        &self.get_ref().0
+    }
+}
+
 impl From<zmq::Socket> for ZmqSocket {
     fn from(socket: zmq::Socket) -> Self {
         Watcher::new(evented::ZmqSocket(socket))
@@ -29,7 +39,7 @@ impl ZmqSocket {
                 flags |= zmq::SNDMORE;
             }
 
-            match self.get_ref().0.send(msg, flags) {
+            match self.as_raw_socket().send(msg, flags) {
                 Ok(_) => {}
                 Err(zmq::Error::EAGAIN) => return Poll::Pending,
                 Err(e) => return Poll::Ready(Err(e.into())),
@@ -48,7 +58,7 @@ impl ZmqSocket {
 
         while more {
             let mut msg = zmq::Message::new();
-            match self.get_ref().0.recv(&mut msg, zmq::DONTWAIT) {
+            match self.as_raw_socket().recv(&mut msg, zmq::DONTWAIT) {
                 Ok(_) => {
                     more = msg.get_more();
                     buffer.push_back(msg);
@@ -62,7 +72,7 @@ impl ZmqSocket {
     }
 
     fn poll_event(&self, event: zmq::PollEvents) -> Poll<Result<(), Error>> {
-        if self.get_ref().0.get_events()?.contains(event) {
+        if self.as_raw_socket().get_events()?.contains(event) {
             Poll::Ready(Ok(()))
         } else {
             Poll::Pending
