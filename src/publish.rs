@@ -23,23 +23,23 @@ impl AsRaw for Publish {
     }
 }
 
-impl Sink<MessageBuf> for Publish {
+impl<T: Into<MessageBuf>> Sink<T> for Publish {
     type Error = Error;
 
     fn poll_ready(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        Pin::new(&mut self.get_mut().0).poll_ready(cx)
+        Sink::<T>::poll_ready(Pin::new(&mut self.get_mut().0), cx)
     }
 
-    fn start_send(self: Pin<&mut Self>, item: MessageBuf) -> Result<(), Self::Error> {
+    fn start_send(self: Pin<&mut Self>, item: T) -> Result<(), Self::Error> {
         Pin::new(&mut self.get_mut().0).start_send(item)
     }
 
     fn poll_flush(self: Pin<&mut Self>, cx: &mut Context) -> Poll<Result<(), Error>> {
-        Pin::new(&mut self.get_mut().0).poll_flush(cx)
+        Sink::<T>::poll_flush(Pin::new(&mut self.get_mut().0), cx)
     }
 
     fn poll_close(self: Pin<&mut Self>, cx: &mut Context) -> Poll<Result<(), Error>> {
-        Pin::new(&mut self.get_mut().0).poll_close(cx)
+        Sink::<T>::poll_close(Pin::new(&mut self.get_mut().0), cx)
     }
 }
 

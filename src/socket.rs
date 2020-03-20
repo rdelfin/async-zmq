@@ -1,6 +1,7 @@
 use std::collections::VecDeque;
 use std::pin::Pin;
 use std::task::{Context, Poll};
+use std::convert::Into;
 
 use async_std::io::Error;
 use async_std::task::ready;
@@ -31,7 +32,7 @@ impl From<zmq::Socket> for ZmqSocket {
 impl ZmqSocket {
     pub fn send(&self, cx: &mut Context<'_>, buffer: &mut MessageBuf) -> Poll<Result<(), Error>> {
         ready!(self.poll_write_ready(cx));
-        ready!(self.poll_event(zmq::POLLIN))?;
+        ready!(self.poll_event(zmq::POLLOUT))?;
 
         while let Some(msg) = buffer.pop_front() {
             let mut flags = zmq::DONTWAIT;
@@ -51,7 +52,7 @@ impl ZmqSocket {
 
     pub fn recv(&self, cx: &mut Context<'_>) -> Poll<Result<MessageBuf, Error>> {
         ready!(self.poll_read_ready(cx));
-        ready!(self.poll_event(zmq::POLLOUT))?;
+        ready!(self.poll_event(zmq::POLLIN))?;
 
         let mut buffer = MessageBuf::new();
         let mut more = true;
@@ -85,26 +86,25 @@ pub struct Sender {
     pub(crate) buffer: MessageBuf,
 }
 
-impl Sink<MessageBuf> for Sender {
+impl<T: Into<MessageBuf>> Sink<T> for Sender {
     type Error = Error;
 
     fn poll_ready(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        self.poll_flush(cx)
+        Sink::<T>::poll_flush(self, cx)
     }
 
-    fn start_send(self: Pin<&mut Self>, item: MessageBuf) -> Result<(), Self::Error> {
-        self.get_mut().buffer = item;
+    fn start_send(self: Pin<&mut Self>, item: T) -> Result<(), Self::Error> {
+        self.get_mut().buffer = item.into();
         Ok(())
     }
 
-    fn poll_flush(self: Pin<&mut Self>, cx: &mut Context) -> Poll<Result<(), Error>> {
+    fn poll_flush(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
         let Self { socket, buffer } = self.get_mut();
-
         socket.send(cx, buffer)
     }
 
-    fn poll_close(self: Pin<&mut Self>, cx: &mut Context) -> Poll<Result<(), Error>> {
-        self.poll_flush(cx)
+    fn poll_close(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+        Sink::<T>::poll_flush(self, cx)
     }
 }
 

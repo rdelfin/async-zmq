@@ -40,11 +40,11 @@ impl Stream for Subscribe {
 }
 
 impl Subscribe {
-    pub fn subscribe(&self, topic: &str) -> Result<(), zmq::Error> {
+    pub fn set_subscribe(&self, topic: &str) -> Result<(), zmq::Error> {
         self.as_raw_socket().set_subscribe(topic.as_bytes())
     }
 
-    pub fn unsubscribe(&self, topic: &str) -> Result<(), zmq::Error> {
+    pub fn set_unsubscribe(&self, topic: &str) -> Result<(), zmq::Error> {
         self.as_raw_socket().set_unsubscribe(topic.as_bytes())
     }
 }
