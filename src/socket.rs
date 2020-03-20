@@ -4,9 +4,8 @@ use std::task::{Context, Poll};
 
 use async_std::io::Error;
 use async_std::task::ready;
-use futures_util::sink::Sink;
-use zmq::Message;
 
+use crate::{Message, Sink, Stream};
 use crate::evented;
 use crate::watcher::Watcher;
 
@@ -113,9 +112,10 @@ pub struct Reciever {
     pub(crate) socket: ZmqSocket,
 }
 
-impl async_std::stream::Stream for Reciever {
+impl Stream for Reciever {
     type Item = Result<MessageBuf, Error>;
+
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context) -> Poll<Option<Self::Item>> {
-        Poll::Ready(Some(Ok(ready!(self.get_mut().socket.recv(cx))?)))
+        Poll::Ready(Some(Ok(ready!(self.socket.recv(cx))?)))
     }
 }

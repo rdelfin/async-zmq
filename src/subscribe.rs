@@ -1,9 +1,14 @@
-use zmq::{Context, Result, SocketType};
+use std::io::Error;
+use std::pin::Pin;
+use std::task::{Context, Poll};
 
-use crate::socket::{AsRaw, Reciever, ZmqSocket};
+use zmq::SocketType;
 
-pub fn subscribe(endpoint: &str) -> Result<Subscribe> {
-    let socket = Context::new().socket(SocketType::SUB)?;
+use crate::Stream;
+use crate::socket::{AsRaw, MessageBuf, Reciever, ZmqSocket};
+
+pub fn subscribe(endpoint: &str) -> Result<Subscribe, zmq::Error> {
+    let socket = zmq::Context::new().socket(SocketType::SUB)?;
 
     socket.connect(endpoint)?;
 
@@ -26,12 +31,20 @@ impl From<zmq::Socket> for Subscribe {
     }
 }
 
+impl Stream for Subscribe {
+    type Item = Result<MessageBuf, Error>;
+
+    fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
+        Pin::new(&mut self.get_mut().0).poll_next(cx)
+    }
+}
+
 impl Subscribe {
-    pub fn subscribe(&self, topic: &str) -> Result<()> {
+    pub fn subscribe(&self, topic: &str) -> Result<(), zmq::Error> {
         self.as_raw_socket().set_subscribe(topic.as_bytes())
     }
 
-    pub fn unsubscribe(&self, topic: &str) -> Result<()> {
+    pub fn unsubscribe(&self, topic: &str) -> Result<(), zmq::Error> {
         self.as_raw_socket().set_unsubscribe(topic.as_bytes())
     }
 }
