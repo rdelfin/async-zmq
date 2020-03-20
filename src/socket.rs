@@ -1,9 +1,10 @@
 use std::collections::VecDeque;
-use std::task::{Context, Poll};
 use std::pin::Pin;
+use std::task::{Context, Poll};
 
-use async_std::task::ready;
 use async_std::io::Error;
+use async_std::task::ready;
+use futures_util::sink::Sink;
 use zmq::Message;
 
 use crate::evented;
@@ -80,19 +81,6 @@ impl ZmqSocket {
     }
 }
 
-#[must_use = "sinks do nothing unless polled"]
-pub trait Sink<Item> {
-    type Error;
-
-    fn poll_ready(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>>;
-
-    fn start_send(self: Pin<&mut Self>, item: Item) -> Result<(), Self::Error>;
-
-    fn poll_flush(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>>;
-
-    fn poll_close(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>>;
-}
-
 pub struct Sender {
     pub(crate) socket: ZmqSocket,
     pub(crate) buffer: MessageBuf,
@@ -111,10 +99,7 @@ impl Sink<MessageBuf> for Sender {
     }
 
     fn poll_flush(self: Pin<&mut Self>, cx: &mut Context) -> Poll<Result<(), Error>> {
-        let Self {
-            socket,
-            buffer,
-        } = self.get_mut();
+        let Self { socket, buffer } = self.get_mut();
 
         socket.send(cx, buffer)
     }

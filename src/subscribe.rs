@@ -1,13 +1,12 @@
-use zmq::{Context, SocketType, Result};
+use zmq::{Context, Result, SocketType};
 
-use crate::socket::{Reciever, ZmqSocket, AsRaw};
+use crate::socket::{AsRaw, Reciever, ZmqSocket};
 
 pub fn subscribe(endpoint: &str) -> Result<Subscribe> {
-    let socket = Context::new()
-        .socket(SocketType::SUB)?;
-    
+    let socket = Context::new().socket(SocketType::SUB)?;
+
     socket.connect(endpoint)?;
-    
+
     Ok(Subscribe::from(socket))
 }
 
@@ -22,7 +21,7 @@ impl AsRaw for Subscribe {
 impl From<zmq::Socket> for Subscribe {
     fn from(socket: zmq::Socket) -> Self {
         Self(Reciever {
-            socket: ZmqSocket::from(socket)
+            socket: ZmqSocket::from(socket),
         })
     }
 }
