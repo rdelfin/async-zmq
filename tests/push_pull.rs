@@ -2,26 +2,23 @@ use std::time::Duration;
 
 use async_std::task::{spawn};
 
-use async_zmq::{publish, Result, SinkExt, StreamExt, subscribe, MessageBuf};
+use async_zmq::{push, Result, SinkExt, StreamExt, pull, MessageBuf};
 
 #[async_std::test]
-async fn publish_subscribe_message() -> Result<()> {
+async fn push_pull_message() -> Result<()> {
     let uri = "tcp://0.0.0.0:2020";
-    let mut publish = publish(uri)?;
-    let mut subscribe = subscribe(uri)?;
-    let topic = "Topic";
-    subscribe.set_subscribe(topic)?;
-    let message = vec![topic, "Hello", "World"];
+    let mut push = push(uri)?;
+    let mut pull = pull(uri)?;
+    let message = vec!["Hello", "World"];
     let expected = message.clone();
 
     let send_handle = spawn( async move {
-        publish.send(message).await.unwrap();
+        push.send(message).await.unwrap();
     });
 
     let receive_handle = spawn( async move {
         async_std::task::sleep(Duration::from_millis(1000)).await;
-        
-        while let Some(recv) = subscribe.next().await {
+        while let Some(recv) = pull.next().await {
             let recv = recv.unwrap();
             assert_eq!(recv, expected.iter().map(|i| i.into()).collect::<MessageBuf>());
             break;

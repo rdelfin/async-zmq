@@ -24,7 +24,7 @@
 //! Users could simply initialize any socket type with `async_zmq::*` in mind. For example, if
 //! someone wants a publish socket, then he could call the function:
 //! 
-//! ```
+//! ```ignore
 //! let zmq = async_zmq::publish("tcp://127.0.0.1:2020")?;
 //! ```
 //! 
@@ -53,6 +53,8 @@
 
 pub mod publish;
 pub mod subscribe;
+pub mod push;
+pub mod pull;
 
 mod evented;
 mod socket;
@@ -63,6 +65,8 @@ pub mod prelude {
     pub use crate::publish::{publish, Publish};
     pub use crate::socket::MessageBuf;
     pub use crate::subscribe::{subscribe, Subscribe};
+    pub use crate::pull::{pull, Pull};
+    pub use crate::push::{push, Push};
     pub use async_std::stream::{Stream, StreamExt};
     pub use futures_util::sink::{Sink, SinkExt};
     pub use zmq::{self, Error, Message, Result};
