@@ -48,12 +48,14 @@
 #![warn(missing_docs, rust_2018_idioms, unreachable_pub)]
 
 pub mod dealer;
+pub mod pair;
 pub mod publish;
 pub mod pull;
 pub mod push;
 pub mod reply;
 pub mod request;
 pub mod router;
+pub mod stream;
 pub mod subscribe;
 pub mod xpublish;
 pub mod xsubscribe;
@@ -65,12 +67,14 @@ mod watcher;
 /// The prelude re-exports most commonly used traits and macros from this crate.
 pub mod prelude {
     pub use crate::dealer::{dealer, Dealer};
+    pub use crate::pair::{pair, Pair};
     pub use crate::publish::{publish, Publish};
     pub use crate::pull::{pull, Pull};
     pub use crate::push::{push, Push};
     pub use crate::reply::{reply, Reply};
     pub use crate::request::{request, Request};
     pub use crate::socket::{MessageBuf, SocketBuilder};
+    pub use crate::stream::{stream, ZmqStream};
     pub use crate::subscribe::{subscribe, Subscribe};
     pub use crate::xpublish::{xpublish, XPublish};
     pub use crate::xsubscribe::{xsubscribe, XSubscribe};

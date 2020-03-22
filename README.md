@@ -6,7 +6,7 @@ is providing simple interface that is compatible with any async executor and rea
 
 ## TODO list
 
-- [ ] PAIR
+- [X] PAIR
 - [x] PUB
 - [x] SUB
 - [x] REQ
@@ -17,7 +17,7 @@ is providing simple interface that is compatible with any async executor and rea
 - [x] PUSH
 - [x] XPUB
 - [x] XSUB
-- [ ] STREAM
+- [x] STREAM
 - [ ] More tests
 
 ## Usage
