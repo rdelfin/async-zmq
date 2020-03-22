@@ -15,8 +15,8 @@ is providing simple interface that is compatible with any async executor and rea
 - [x] ROUTER
 - [x] PULL
 - [x] PUSH
-- [ ] XPUB
-- [ ] XSUB
+- [x] XPUB
+- [x] XSUB
 - [ ] STREAM
 - [ ] More tests
 

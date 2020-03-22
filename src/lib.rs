@@ -55,6 +55,8 @@ pub mod reply;
 pub mod request;
 pub mod router;
 pub mod subscribe;
+pub mod xpublish;
+pub mod xsubscribe;
 
 mod evented;
 mod socket;
@@ -70,6 +72,8 @@ pub mod prelude {
     pub use crate::request::{request, Request};
     pub use crate::socket::{MessageBuf, SocketBuilder};
     pub use crate::subscribe::{subscribe, Subscribe};
+    pub use crate::xpublish::{xpublish, XPublish};
+    pub use crate::xsubscribe::{xsubscribe, XSubscribe};
     pub use futures::sink::{Sink, SinkExt};
     pub use futures::stream::{Stream, StreamExt};
     pub use zmq::{self, Error, Message, Result};
