@@ -9,15 +9,16 @@ is providing simple interface that is compatible with any async executor and rea
 - [ ] PAIR
 - [x] PUB
 - [x] SUB
-- [ ] REQ
-- [ ] REP
-- [ ] DEALER
-- [ ] ROUTER
+- [x] REQ
+- [x] REP
+- [x] DEALER
+- [x] ROUTER
 - [x] PULL
 - [x] PUSH
 - [ ] XPUB
 - [ ] XSUB
 - [ ] STREAM
+- [ ] More tests
 
 ## Usage
 

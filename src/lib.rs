@@ -53,6 +53,8 @@ pub mod push;
 pub mod reply;
 pub mod request;
 pub mod subscribe;
+pub mod dealer;
+pub mod router;
 
 mod evented;
 mod socket;
@@ -60,6 +62,7 @@ mod watcher;
 
 /// The prelude re-exports most commonly used traits and macros from this crate.
 pub mod prelude {
+    pub use crate::dealer::{dealer, Dealer};
     pub use crate::publish::{publish, Publish};
     pub use crate::pull::{pull, Pull};
     pub use crate::push::{push, Push};
@@ -67,8 +70,8 @@ pub mod prelude {
     pub use crate::request::{request, Request};
     pub use crate::socket::MessageBuf;
     pub use crate::subscribe::{subscribe, Subscribe};
-    pub use async_std::stream::{Stream, StreamExt};
-    pub use futures_util::sink::{Sink, SinkExt};
+    pub use futures::stream::{Stream, StreamExt};
+    pub use futures::sink::{Sink, SinkExt};
     pub use zmq::{self, Error, Message, Result};
 }
 

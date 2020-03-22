@@ -162,3 +162,38 @@ impl Stream for Reciever {
         Poll::Ready(Some(Ok(ready!(self.socket.recv(cx))?)))
     }
 }
+
+pub(crate) struct Broker {
+    pub(crate) socket: ZmqSocket,
+    pub(crate) buffer: MessageBuf,
+}
+
+impl<T: Into<MessageBuf>> Sink<T> for Broker {
+    type Error = Error;
+
+    fn poll_ready(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+        Sink::<T>::poll_flush(self, cx)
+    }
+
+    fn start_send(self: Pin<&mut Self>, item: T) -> Result<(), Self::Error> {
+        self.get_mut().buffer = item.into();
+        Ok(())
+    }
+
+    fn poll_flush(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+        let Self { socket, buffer } = self.get_mut();
+        socket.send(cx, buffer)
+    }
+
+    fn poll_close(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+        Sink::<T>::poll_flush(self, cx)
+    }
+}
+
+impl Stream for Broker {
+    type Item = Result<MessageBuf, Error>;
+
+    fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
+        Poll::Ready(Some(Ok(ready!(self.socket.recv(cx))?)))
+    }
+}
