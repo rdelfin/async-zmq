@@ -54,6 +54,37 @@ impl std::ops::DerefMut for MessageBuf {
     }
 }
 
+/// ZMQ socket builder. It lets user to either bind or connect the socket of their choice.
+pub struct SocketBuilder<'a, T> {
+    pub(crate) socket: zmq::Socket,
+    pub(crate) endpoint: &'a str,
+    _phantom: std::marker::PhantomData<T>,
+}
+
+impl<'a, T> SocketBuilder<'a, T>
+where
+    T: From<zmq::Socket>,
+{
+    pub(crate) fn new(socket: zmq::Socket, endpoint: &'a str) -> Self {
+        Self {
+            socket,
+            endpoint,
+            _phantom: Default::default(),
+        }
+    }
+    /// Connect to the ZMQ endpoint based on given URI
+    pub fn connect(self) -> Result<T, Error> {
+        self.socket.connect(self.endpoint)?;
+        Ok(T::from(self.socket))
+    }
+
+    /// Bind to the ZMQ endpoint based on given URI
+    pub fn bind(self) -> Result<T, Error> {
+        self.socket.bind(self.endpoint)?;
+        Ok(T::from(self.socket))
+    }
+}
+
 pub(crate) type ZmqSocket = Watcher<evented::ZmqSocket>;
 
 impl ZmqSocket {

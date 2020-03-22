@@ -7,8 +7,8 @@ use async_zmq::{publish, subscribe, MessageBuf, Result, SinkExt, StreamExt};
 #[async_std::test]
 async fn publish_subscribe_message() -> Result<()> {
     let uri = "tcp://0.0.0.0:5555";
-    let mut publish = publish(uri)?;
-    let mut subscribe = subscribe(uri)?;
+    let mut publish = publish(uri)?.bind()?;
+    let mut subscribe = subscribe(uri)?.connect()?;
     let topic = "Topic";
     subscribe.set_subscribe(topic)?;
     let message = vec![topic, "Hello", "World"];

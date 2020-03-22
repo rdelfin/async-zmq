@@ -9,7 +9,7 @@
 //!
 //! #[async_std::main]
 //! async fn main() -> Result<()> {
-//!     let mut zmq = async_zmq::reply("tcp://127.0.0.1:5555")?;
+//!     let mut zmq = async_zmq::reply("tcp://127.0.0.1:5555")?.bind()?;
 //!
 //!     let msg = zmq.recv().await?;
 //!     zmq.send(vec!["broadcast message"]).await?;
@@ -23,15 +23,13 @@ use std::sync::atomic::{AtomicBool, Ordering};
 
 use zmq::{Error, SocketType};
 
-use crate::socket::{MessageBuf, Sender, ZmqSocket};
+use crate::socket::{MessageBuf, Sender, SocketBuilder, ZmqSocket};
 
 /// Create a ZMQ socket with REP type
-pub fn reply(endpoint: &str) -> Result<Reply, zmq::Error> {
+pub fn reply(endpoint: &str) -> Result<SocketBuilder<'_, Reply>, zmq::Error> {
     let socket = zmq::Context::new().socket(SocketType::REP)?;
 
-    socket.bind(endpoint)?;
-
-    Ok(Reply::from(socket))
+    Ok(SocketBuilder::new(socket, endpoint))
 }
 
 /// The async wrapper of ZMQ socket with REP type

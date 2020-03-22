@@ -9,7 +9,7 @@
 //!
 //! #[async_std::main]
 //! async fn main() -> Result<()> {
-//!     let mut zmq = async_zmq::pull("tcp://127.0.0.1:5555")?;
+//!     let mut zmq = async_zmq::pull("tcp://127.0.0.1:5555")?.connect()?;
 //!
 //!     while let Some(msg) = zmq.next().await {
 //!         // Received message is a type of Result<MessageBuf>
@@ -30,16 +30,14 @@ use std::task::{Context, Poll};
 
 use zmq::{Error, SocketType};
 
-use crate::socket::{MessageBuf, Reciever, ZmqSocket};
+use crate::socket::{MessageBuf, Reciever, SocketBuilder, ZmqSocket};
 use crate::Stream;
 
 /// Create a ZMQ socket with PULL type
-pub fn pull(endpoint: &str) -> Result<Pull, zmq::Error> {
+pub fn pull(endpoint: &str) -> Result<SocketBuilder<'_, Pull>, zmq::Error> {
     let socket = zmq::Context::new().socket(SocketType::PULL)?;
 
-    socket.connect(endpoint)?;
-
-    Ok(Pull::from(socket))
+    Ok(SocketBuilder::new(socket, endpoint))
 }
 
 /// The async wrapper of ZMQ socket with PULL type

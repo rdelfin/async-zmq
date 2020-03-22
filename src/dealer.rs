@@ -19,16 +19,14 @@ use std::task::{Context, Poll};
 
 use zmq::{Error, SocketType};
 
-use crate::socket::{MessageBuf, Broker, ZmqSocket};
+use crate::socket::{Broker, MessageBuf, SocketBuilder, ZmqSocket};
 use crate::{Sink, Stream};
 
 /// Create a ZMQ socket with DEALER type
-pub fn dealer(endpoint: &str) -> Result<Dealer, zmq::Error> {
+pub fn dealer(endpoint: &str) -> Result<SocketBuilder<'_, Dealer>, zmq::Error> {
     let socket = zmq::Context::new().socket(SocketType::DEALER)?;
 
-    socket.connect(endpoint)?;
-
-    Ok(Dealer::from(socket))
+    Ok(SocketBuilder::new(socket, endpoint))
 }
 
 /// The async wrapper of ZMQ socket with DEALER type

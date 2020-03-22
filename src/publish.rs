@@ -9,7 +9,7 @@
 //!
 //! #[async_std::main]
 //! async fn main() -> Result<()> {
-//!     let mut zmq = async_zmq::publish("tcp://127.0.0.1:5555")?;
+//!     let mut zmq = async_zmq::publish("tcp://127.0.0.1:5555")?.bind()?;
 //!
 //!     zmq.send(vec!["topic", "broadcast message"]).await?;
 //!     Ok(())
@@ -25,16 +25,14 @@ use std::task::{Context, Poll};
 
 use zmq::{Error, SocketType};
 
-use crate::socket::{MessageBuf, Sender, ZmqSocket};
+use crate::socket::{MessageBuf, Sender, SocketBuilder, ZmqSocket};
 use crate::Sink;
 
 /// Create a ZMQ socket with PUB type
-pub fn publish(endpoint: &str) -> Result<Publish, zmq::Error> {
+pub fn publish(endpoint: &str) -> Result<SocketBuilder<'_, Publish>, zmq::Error> {
     let socket = zmq::Context::new().socket(SocketType::PUB)?;
 
-    socket.bind(endpoint)?;
-
-    Ok(Publish::from(socket))
+    Ok(SocketBuilder::new(socket, endpoint))
 }
 
 /// The async wrapper of ZMQ socket with PUB type

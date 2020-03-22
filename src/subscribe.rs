@@ -9,7 +9,7 @@
 //!
 //! #[async_std::main]
 //! async fn main() -> Result<()> {
-//!     let mut zmq = async_zmq::subscribe("tcp://127.0.0.1:5555")?;
+//!     let mut zmq = async_zmq::subscribe("tcp://127.0.0.1:5555")?.connect()?;
 //!
 //!     // Subscribe the topic you want to listen.
 //!     // Users can subscribe multiple topics and even unsubscribe later.
@@ -34,16 +34,14 @@ use std::task::{Context, Poll};
 
 use zmq::{Error, SocketType};
 
-use crate::socket::{MessageBuf, Reciever, ZmqSocket};
+use crate::socket::{MessageBuf, Reciever, SocketBuilder, ZmqSocket};
 use crate::Stream;
 
 /// Create a ZMQ socket with SUB type
-pub fn subscribe(endpoint: &str) -> Result<Subscribe, zmq::Error> {
+pub fn subscribe(endpoint: &str) -> Result<SocketBuilder<'_, Subscribe>, zmq::Error> {
     let socket = zmq::Context::new().socket(SocketType::SUB)?;
 
-    socket.connect(endpoint)?;
-
-    Ok(Subscribe::from(socket))
+    Ok(SocketBuilder::new(socket, endpoint))
 }
 
 /// The async wrapper of ZMQ socket with SUB type

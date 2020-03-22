@@ -47,14 +47,14 @@
 #![deny(unused_extern_crates, unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms, unreachable_pub)]
 
+pub mod dealer;
 pub mod publish;
 pub mod pull;
 pub mod push;
 pub mod reply;
 pub mod request;
-pub mod subscribe;
-pub mod dealer;
 pub mod router;
+pub mod subscribe;
 
 mod evented;
 mod socket;
@@ -68,10 +68,10 @@ pub mod prelude {
     pub use crate::push::{push, Push};
     pub use crate::reply::{reply, Reply};
     pub use crate::request::{request, Request};
-    pub use crate::socket::MessageBuf;
+    pub use crate::socket::{MessageBuf, SocketBuilder};
     pub use crate::subscribe::{subscribe, Subscribe};
-    pub use futures::stream::{Stream, StreamExt};
     pub use futures::sink::{Sink, SinkExt};
+    pub use futures::stream::{Stream, StreamExt};
     pub use zmq::{self, Error, Message, Result};
 }
 

@@ -19,16 +19,14 @@ use std::task::{Context, Poll};
 
 use zmq::{Error, SocketType};
 
-use crate::socket::{MessageBuf, Broker, ZmqSocket};
+use crate::socket::{Broker, MessageBuf, SocketBuilder, ZmqSocket};
 use crate::{Sink, Stream};
 
 /// Create a ZMQ socket with ROUTER type
-pub fn router(endpoint: &str) -> Result<Router, zmq::Error> {
+pub fn router(endpoint: &str) -> Result<SocketBuilder<'_, Router>, zmq::Error> {
     let socket = zmq::Context::new().socket(SocketType::ROUTER)?;
 
-    socket.bind(endpoint)?;
-
-    Ok(Router::from(socket))
+    Ok(SocketBuilder::new(socket, endpoint))
 }
 
 /// The async wrapper of ZMQ socket with ROUTER type

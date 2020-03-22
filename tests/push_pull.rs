@@ -7,8 +7,8 @@ use async_zmq::{pull, push, MessageBuf, Result, SinkExt, StreamExt};
 #[async_std::test]
 async fn push_pull_message() -> Result<()> {
     let uri = "tcp://0.0.0.0:5555";
-    let mut push = push(uri)?;
-    let mut pull = pull(uri)?;
+    let mut push = push(uri)?.bind()?;
+    let mut pull = pull(uri)?.connect()?;
     let message = vec!["Hello", "World"];
     let expected = message.clone();
 
