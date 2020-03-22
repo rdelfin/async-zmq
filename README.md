@@ -13,8 +13,8 @@ is providing simple interface that is compatible with any async executor and rea
 - [ ] REP
 - [ ] DEALER
 - [ ] ROUTER
-- [ ] PULL
-- [ ] PUSH
+- [x] PULL
+- [x] PUSH
 - [ ] XPUB
 - [ ] XSUB
 - [ ] STREAM
@@ -25,7 +25,7 @@ Users could simply initialize any socket type with `async_zmq::*` in mind. For e
 someone wants a publish socket, then he could call the function:
 
 ```
-let zmq = async_zmq::publish("tcp://127.0.0.1:2020")?;
+let zmq = async_zmq::publish("tcp://127.0.0.1:5555")?;
 ```
 
 To learn more about each socket type usage. See [modules](#modules) below.

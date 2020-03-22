@@ -1,21 +1,21 @@
-//! Push socket module of Push/Pull pattern in ZMQ
-//! 
+//! PUSH socket module of Pipeline pattern in ZMQ
+//!
 //! Use [`push`] function to instantiate a PUSH socket and the you will be able to use methods from [`Sink`]/[`SinkExt`] trait.
-//!  
+//!
 //! # Example
-//! 
+//!
 //! ```no_run
 //! use async_zmq::{Result, SinkExt};
-//! 
+//!
 //! #[async_std::main]
 //! async fn main() -> Result<()> {
-//!     let mut zmq = async_zmq::push("tcp://127.0.0.1:2020")?;
-//! 
+//!     let mut zmq = async_zmq::push("tcp://127.0.0.1:5555")?;
+//!
 //!     zmq.send(vec!["topic", "broadcast message"]).await?;
 //!     Ok(())
 //! }
 //! ```
-//! 
+//!
 //! [`push`]: fn.push.html
 //! [`Sink`]: ../prelude/trait.Sink.html
 //! [`SinkExt`]: ../prelude/trait.SinkExt.html
@@ -23,12 +23,12 @@
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
-use zmq::{SocketType, Error};
+use zmq::{Error, SocketType};
 
+use crate::socket::{MessageBuf, Sender, ZmqSocket};
 use crate::Sink;
-use crate::socket::{AsRaw, MessageBuf, Sender, ZmqSocket};
 
-/// Create a ZMQ socket with PUB type
+/// Create a ZMQ socket with PUSH type
 pub fn push(endpoint: &str) -> Result<Push, zmq::Error> {
     let socket = zmq::Context::new().socket(SocketType::PUSH)?;
 
@@ -37,11 +37,12 @@ pub fn push(endpoint: &str) -> Result<Push, zmq::Error> {
     Ok(Push::from(socket))
 }
 
-/// The async wrapper of ZMQ socket with PUB type
+/// The async wrapper of ZMQ socket with PUSH type
 pub struct Push(Sender);
 
-impl AsRaw for Push {
-    fn as_raw_socket(&self) -> &zmq::Socket {
+impl Push {
+    /// Represent as `Socket` from zmq crate in case you want to call its methods.
+    pub fn as_raw_socket(&self) -> &zmq::Socket {
         &self.0.socket.get_ref().0
     }
 }

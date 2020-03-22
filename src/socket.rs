@@ -1,17 +1,17 @@
 use std::collections::VecDeque;
+use std::convert::Into;
 use std::pin::Pin;
 use std::task::{Context, Poll};
-use std::convert::Into;
 
 use async_std::task::ready;
 use zmq::Error;
 
-use crate::{Message, Sink, Stream};
 use crate::evented;
 use crate::watcher::Watcher;
+use crate::{Message, Sink, Stream};
 
 /// Alias type for Message queue.
-/// 
+///
 /// This is a [`VecDeque`] to easier popping front [`Message`](struct.Message.html).
 /// Users are free to use any type to queue their message as long as it satisfied trait boud [`Into<MessageBuf>`].
 ///
@@ -56,12 +56,8 @@ impl std::ops::DerefMut for MessageBuf {
 
 pub(crate) type ZmqSocket = Watcher<evented::ZmqSocket>;
 
-pub(crate) trait AsRaw {
-    fn as_raw_socket(&self) -> &zmq::Socket;
-}
-
-impl AsRaw for ZmqSocket {
-    fn as_raw_socket(&self) -> &zmq::Socket {
+impl ZmqSocket {
+    pub(crate) fn as_raw_socket(&self) -> &zmq::Socket {
         &self.get_ref().0
     }
 }
@@ -73,7 +69,11 @@ impl From<zmq::Socket> for ZmqSocket {
 }
 
 impl ZmqSocket {
-    pub(crate) fn send(&self, cx: &mut Context<'_>, buffer: &mut MessageBuf) -> Poll<Result<(), Error>> {
+    pub(crate) fn send(
+        &self,
+        cx: &mut Context<'_>,
+        buffer: &mut MessageBuf,
+    ) -> Poll<Result<(), Error>> {
         ready!(self.poll_write_ready(cx));
         ready!(self.poll_event(zmq::POLLOUT))?;
 

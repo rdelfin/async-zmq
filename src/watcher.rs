@@ -223,7 +223,11 @@ impl<T: Evented> Watcher<T> {
     ///
     /// If the operation returns an error of the `io::ErrorKind::WouldBlock` kind, the current task
     /// will be registered for wakeup when the I/O source becomes readable.
-    pub(crate) fn poll_read_with<'a, F, R>(&'a self, cx: &mut Context<'_>, mut f: F) -> Poll<io::Result<R>>
+    pub(crate) fn poll_read_with<'a, F, R>(
+        &'a self,
+        cx: &mut Context<'_>,
+        mut f: F,
+    ) -> Poll<io::Result<R>>
     where
         F: FnMut(&'a T) -> io::Result<R>,
     {
