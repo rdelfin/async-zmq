@@ -4,7 +4,7 @@ use mio::unix::EventedFd;
 use mio::{Evented, Poll, PollOpt, Ready, Token};
 use zmq::Socket;
 
-pub(crate) struct ZmqSocket(pub Socket);
+pub(crate) struct ZmqSocket(pub(crate) Socket);
 /*
 impl ZmqSocket {
     pub fn new(socket: Socket) -> Self {

@@ -1,10 +1,13 @@
 [package]
 name = "async_zmq"
-version = "0.0.2"
+version = "0.0.3"
 authors = ["Yu-Wei Wu <wusyong9104@gmail.com>"]
 edition = "2018"
 description = "WIP"
 license = "MIT/Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/wusyong/async-zmq"
+documentation = "https://docs.rs/async-zmq"
 
 [dependencies]
 mio = "0.6.21"

@@ -1,12 +1,34 @@
-use std::io::Error;
+//! Publisher module of Pub/Sub pattern in ZMQ
+//! 
+//! Use [`publish`] function to instantiate a publisher and the you will be able to use methods from [`Sink`]/[`SinkExt`] trait.
+//!  
+//! # Example
+//! 
+//! ```no_run
+//! use async_zmq::{Result, SinkExt};
+//! 
+//! #[async_std::main]
+//! async fn main() -> Result<()> {
+//!     let mut zmq = async_zmq::publish("tcp://127.0.0.1:2020")?;
+//! 
+//!     zmq.send(vec!["topic", "broadcast message"]).await?;
+//!     Ok(())
+//! }
+//! ```
+//! 
+//! [`publish`]: fn.publish.html
+//! [`Sink`]: ../prelude/trait.Sink.html
+//! [`SinkExt`]: ../prelude/trait.SinkExt.html
+
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
-use zmq::SocketType;
+use zmq::{SocketType, Error};
 
 use crate::Sink;
 use crate::socket::{AsRaw, MessageBuf, Sender, ZmqSocket};
 
+/// Create a ZMQ socket with PUB type
 pub fn publish(endpoint: &str) -> Result<Publish, zmq::Error> {
     let socket = zmq::Context::new().socket(SocketType::PUB)?;
 
@@ -15,6 +37,7 @@ pub fn publish(endpoint: &str) -> Result<Publish, zmq::Error> {
     Ok(Publish::from(socket))
 }
 
+/// The async wrapper of ZMQ socket with PUB type
 pub struct Publish(Sender);
 
 impl AsRaw for Publish {
@@ -34,11 +57,11 @@ impl<T: Into<MessageBuf>> Sink<T> for Publish {
         Pin::new(&mut self.get_mut().0).start_send(item)
     }
 
-    fn poll_flush(self: Pin<&mut Self>, cx: &mut Context) -> Poll<Result<(), Error>> {
+    fn poll_flush(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Error>> {
         Sink::<T>::poll_flush(Pin::new(&mut self.get_mut().0), cx)
     }
 
-    fn poll_close(self: Pin<&mut Self>, cx: &mut Context) -> Poll<Result<(), Error>> {
+    fn poll_close(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Error>> {
         Sink::<T>::poll_close(Pin::new(&mut self.get_mut().0), cx)
     }
 }

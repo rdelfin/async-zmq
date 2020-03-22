@@ -1,12 +1,44 @@
-use std::io::Error;
+//! Subscriber module of Pub/Sub pattern in ZMQ
+//! 
+//! Use [`subscribe`] function to instantiate a subscriber and the you will be able to use methods from [`Stream`]/[`StreamExt`] trait.
+//! 
+//! # Example
+//! 
+//! ```no_run
+//! use async_zmq::{Result, StreamExt};
+//! 
+//! #[async_std::main]
+//! async fn main() -> Result<()> {
+//!     let mut zmq = async_zmq::subscribe("tcp://127.0.0.1:2020")?;
+//! 
+//!     // Subscribe the topic you want to listen.
+//!     // Users can subscribe multiple topics and even unsubscribe later.
+//!     zmq.set_subscribe("topic")?;
+//! 
+//!     while let Some(msg) = zmq.next().await {
+//!         // Received message is a type of Result<MessageBuf>
+//!         let msg = msg?;
+//! 
+//!         println!("{:?}", msg.iter());
+//!     }
+//!     Ok(())
+//! }
+//! ```
+//! 
+//! [`subscribe`]: fn.subscribe.html
+//! [`Stream`]: ../prelude/trait.Stream.html
+//! [`StreamExt`]: ../prelude/trait.StreamExt.html
+
+
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
-use zmq::SocketType;
+use zmq::{SocketType, Error};
 
 use crate::Stream;
 use crate::socket::{AsRaw, MessageBuf, Reciever, ZmqSocket};
 
+/// Create a ZMQ socket with SUB type
 pub fn subscribe(endpoint: &str) -> Result<Subscribe, zmq::Error> {
     let socket = zmq::Context::new().socket(SocketType::SUB)?;
 
@@ -15,6 +47,7 @@ pub fn subscribe(endpoint: &str) -> Result<Subscribe, zmq::Error> {
     Ok(Subscribe::from(socket))
 }
 
+/// The async wrapper of ZMQ socket with SUB type
 pub struct Subscribe(Reciever);
 
 impl AsRaw for Subscribe {
@@ -40,10 +73,12 @@ impl Stream for Subscribe {
 }
 
 impl Subscribe {
+    /// Subscribe a topic to the socket
     pub fn set_subscribe(&self, topic: &str) -> Result<(), zmq::Error> {
         self.as_raw_socket().set_subscribe(topic.as_bytes())
     }
 
+    /// Remove a topic from the socket
     pub fn set_unsubscribe(&self, topic: &str) -> Result<(), zmq::Error> {
         self.as_raw_socket().set_unsubscribe(topic.as_bytes())
     }

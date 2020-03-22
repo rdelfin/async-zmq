@@ -192,7 +192,7 @@ fn main_loop() -> io::Result<()> {
 ///
 /// This handle wraps an I/O event source and exposes a "futurized" interface on top of it,
 /// implementing traits `AsyncRead` and `AsyncWrite`.
-pub struct Watcher<T: Evented> {
+pub(crate) struct Watcher<T: Evented> {
     /// Data associated with the I/O handle.
     entry: Arc<Entry>,
 
@@ -205,7 +205,7 @@ impl<T: Evented> Watcher<T> {
     ///
     /// The provided I/O event source will be kept registered inside the reactor's poller for the
     /// lifetime of the returned I/O handle.
-    pub fn new(source: T) -> Watcher<T> {
+    pub(crate) fn new(source: T) -> Watcher<T> {
         Watcher {
             entry: REACTOR
                 .register(&source)
@@ -215,7 +215,7 @@ impl<T: Evented> Watcher<T> {
     }
 
     /// Returns a reference to the inner I/O event source.
-    pub fn get_ref(&self) -> &T {
+    pub(crate) fn get_ref(&self) -> &T {
         self.source.as_ref().unwrap()
     }
 
@@ -223,7 +223,7 @@ impl<T: Evented> Watcher<T> {
     ///
     /// If the operation returns an error of the `io::ErrorKind::WouldBlock` kind, the current task
     /// will be registered for wakeup when the I/O source becomes readable.
-    pub fn poll_read_with<'a, F, R>(&'a self, cx: &mut Context<'_>, mut f: F) -> Poll<io::Result<R>>
+    pub(crate) fn poll_read_with<'a, F, R>(&'a self, cx: &mut Context<'_>, mut f: F) -> Poll<io::Result<R>>
     where
         F: FnMut(&'a T) -> io::Result<R>,
     {
@@ -256,7 +256,7 @@ impl<T: Evented> Watcher<T> {
     ///
     /// If the operation returns an error of the `io::ErrorKind::WouldBlock` kind, the current task
     /// will be registered for wakeup when the I/O source becomes writable.
-    pub fn poll_write_with<'a, F, R>(
+    pub(crate) fn poll_write_with<'a, F, R>(
         &'a self,
         cx: &mut Context<'_>,
         mut f: F,
@@ -295,7 +295,7 @@ impl<T: Evented> Watcher<T> {
     /// will be saved and notified when it can read non-blocking
     /// again.
     #[allow(dead_code)]
-    pub fn poll_read_ready(&self, cx: &mut Context<'_>) -> Poll<()> {
+    pub(crate) fn poll_read_ready(&self, cx: &mut Context<'_>) -> Poll<()> {
         // Lock the waker list.
         let mut readers = self.entry.readers.lock().unwrap();
         if readers.ready {
@@ -313,7 +313,7 @@ impl<T: Evented> Watcher<T> {
     /// If non-blocking writes are currently not possible, the `Waker`
     /// will be saved and notified when it can write non-blocking
     /// again.
-    pub fn poll_write_ready(&self, cx: &mut Context<'_>) -> Poll<()> {
+    pub(crate) fn poll_write_ready(&self, cx: &mut Context<'_>) -> Poll<()> {
         // Lock the waker list.
         let mut writers = self.entry.writers.lock().unwrap();
         if writers.ready {
@@ -330,7 +330,7 @@ impl<T: Evented> Watcher<T> {
     ///
     /// This method is typically used to convert `Watcher`s to raw file descriptors/handles.
     #[allow(dead_code)]
-    pub fn into_inner(mut self) -> T {
+    pub(crate) fn into_inner(mut self) -> T {
         let source = self.source.take().unwrap();
         REACTOR
             .deregister(&source, &self.entry)

@@ -3,17 +3,60 @@ use std::pin::Pin;
 use std::task::{Context, Poll};
 use std::convert::Into;
 
-use async_std::io::Error;
 use async_std::task::ready;
+use zmq::Error;
 
 use crate::{Message, Sink, Stream};
 use crate::evented;
 use crate::watcher::Watcher;
 
-pub type MessageBuf = VecDeque<Message>;
+/// Alias type for Message queue.
+/// 
+/// This is a [`VecDeque`] to easier popping front [`Message`](struct.Message.html).
+/// Users are free to use any type to queue their message as long as it satisfied trait boud [`Into<MessageBuf>`].
+///
+/// [`VecDeque`]: https://doc.rust-lang.org/std/collections/struct.VecDeque.html
+/// [`Into<MessageBuf>`]: https://doc.rust-lang.org/std/convert/trait.Into.html
+#[derive(Debug, Default, PartialEq, Eq)]
+pub struct MessageBuf(pub VecDeque<Message>);
+
+impl From<Message> for MessageBuf {
+    fn from(message: Message) -> Self {
+        let mut buf = VecDeque::with_capacity(1);
+        buf.push_back(message);
+        Self(buf)
+    }
+}
+
+impl<T: Into<Message>> From<Vec<T>> for MessageBuf {
+    fn from(vec: Vec<T>) -> Self {
+        Self(vec.into_iter().map(|i| i.into()).collect())
+    }
+}
+
+impl std::iter::FromIterator<Message> for MessageBuf {
+    fn from_iter<T: IntoIterator<Item = Message>>(iter: T) -> Self {
+        Self(iter.into_iter().collect())
+    }
+}
+
+impl std::ops::Deref for MessageBuf {
+    type Target = VecDeque<Message>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl std::ops::DerefMut for MessageBuf {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
 pub(crate) type ZmqSocket = Watcher<evented::ZmqSocket>;
 
-pub trait AsRaw {
+pub(crate) trait AsRaw {
     fn as_raw_socket(&self) -> &zmq::Socket;
 }
 
@@ -30,7 +73,7 @@ impl From<zmq::Socket> for ZmqSocket {
 }
 
 impl ZmqSocket {
-    pub fn send(&self, cx: &mut Context<'_>, buffer: &mut MessageBuf) -> Poll<Result<(), Error>> {
+    pub(crate) fn send(&self, cx: &mut Context<'_>, buffer: &mut MessageBuf) -> Poll<Result<(), Error>> {
         ready!(self.poll_write_ready(cx));
         ready!(self.poll_event(zmq::POLLOUT))?;
 
@@ -50,11 +93,11 @@ impl ZmqSocket {
         Poll::Ready(Ok(()))
     }
 
-    pub fn recv(&self, cx: &mut Context<'_>) -> Poll<Result<MessageBuf, Error>> {
+    pub(crate) fn recv(&self, cx: &mut Context<'_>) -> Poll<Result<MessageBuf, Error>> {
         ready!(self.poll_read_ready(cx));
         ready!(self.poll_event(zmq::POLLIN))?;
 
-        let mut buffer = MessageBuf::new();
+        let mut buffer = MessageBuf::default();
         let mut more = true;
 
         while more {
@@ -62,7 +105,7 @@ impl ZmqSocket {
             match self.as_raw_socket().recv(&mut msg, zmq::DONTWAIT) {
                 Ok(_) => {
                     more = msg.get_more();
-                    buffer.push_back(msg);
+                    buffer.0.push_back(msg);
                 }
                 Err(zmq::Error::EAGAIN) => return Poll::Pending,
                 Err(e) => return Poll::Ready(Err(e.into())),
@@ -81,7 +124,7 @@ impl ZmqSocket {
     }
 }
 
-pub struct Sender {
+pub(crate) struct Sender {
     pub(crate) socket: ZmqSocket,
     pub(crate) buffer: MessageBuf,
 }
@@ -108,14 +151,14 @@ impl<T: Into<MessageBuf>> Sink<T> for Sender {
     }
 }
 
-pub struct Reciever {
+pub(crate) struct Reciever {
     pub(crate) socket: ZmqSocket,
 }
 
 impl Stream for Reciever {
     type Item = Result<MessageBuf, Error>;
 
-    fn poll_next(self: Pin<&mut Self>, cx: &mut Context) -> Poll<Option<Self::Item>> {
+    fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         Poll::Ready(Some(Ok(ready!(self.socket.recv(cx))?)))
     }
 }

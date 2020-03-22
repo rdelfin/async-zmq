@@ -28,7 +28,7 @@ async fn publish_subribe_topic() -> Result<()> {
 
     barrier.wait().await;
     async_std::task::sleep(Duration::from_millis(1000)).await;
-    socket.send(message.into_iter().map(|i| i.into()).collect::<MessageBuf>()).await.unwrap();
+    socket.send(message).await.unwrap();
     join.await;
     Ok(())
 }
