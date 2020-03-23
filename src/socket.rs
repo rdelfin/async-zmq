@@ -138,7 +138,6 @@ impl ZmqSocket {
                     more = msg.get_more();
                     buffer.0.push_back(msg);
                 }
-                Err(zmq::Error::EAGAIN) => return Poll::Pending,
                 Err(e) => return Poll::Ready(Err(e.into())),
             }
         }
@@ -150,7 +149,7 @@ impl ZmqSocket {
         if self.as_raw_socket().get_events()?.contains(event) {
             Poll::Ready(Ok(()))
         } else {
-            Poll::Pending
+            Poll::Ready(Err(Error::EAGAIN))
         }
     }
 }

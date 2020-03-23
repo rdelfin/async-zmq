@@ -1,5 +1,4 @@
-use std::time::Duration;
-
+use async_std::sync::{Arc, Mutex};
 use async_std::task::spawn;
 
 use async_zmq::{publish, subscribe, MessageBuf, Result, SinkExt, StreamExt};
@@ -13,21 +12,25 @@ async fn publish_subscribe_message() -> Result<()> {
     subscribe.set_subscribe(topic)?;
     let message = vec![topic, "Hello", "World"];
     let expected = message.clone();
+    let running = Arc::new(Mutex::new(true));
+    let notify = running.clone();
 
     let send_handle = spawn(async move {
-        publish.send(message).await.unwrap();
+        while *running.lock().await {
+            let _ = publish.send(message.clone()).await;
+        }
     });
 
     let receive_handle = spawn(async move {
-        async_std::task::sleep(Duration::from_millis(1000)).await;
-
         while let Some(recv) = subscribe.next().await {
-            let recv = recv.unwrap();
-            assert_eq!(
-                recv,
-                expected.iter().map(|i| i.into()).collect::<MessageBuf>()
-            );
-            break;
+            if let Ok(recv) = recv {
+                assert_eq!(
+                    recv,
+                    expected.iter().map(|i| i.into()).collect::<MessageBuf>()
+                );
+                *notify.lock().await = false;
+                break;
+            }
         }
     });
 
