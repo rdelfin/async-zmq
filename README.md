@@ -1,5 +1,11 @@
 # Async version for ZeroMQ bindings
 
+[![][crates-badge]][crates-url] ![][license-badge]
+
+[crates-badge]: https://img.shields.io/crates/v/async-zmq
+[crates-url]: https://crates.io/crates/async_zmq
+[license-badge]: https://img.shields.io/crates/l/async-zmq
+
 This is high-level bindings for [`zmq`] in asynchronous manner. Crate itself uses some modules from
 [`async-std`], but it should also work on any other async runtime. The goal for this project
 is providing simple interface that is compatible with any async executor and reactor.
