@@ -21,11 +21,12 @@
 //!
 //! ## Usage
 //!
-//! Users could simply initialize any socket type with `async_zmq::*` in mind. For example, if
-//! someone wants a publish socket, then he could call the function:
+//! Users could simply initialize any socket type with `async_zmq::*` in mind, and then call
+//! `bind()` or `connect` depends on your scenario. For example, if someone wants a publish socket,
+//! then he could initialize the socket like this:
 //!
 //! ```ignore
-//! let zmq = async_zmq::publish("tcp://127.0.0.1:5555")?;
+//! let zmq = async_zmq::publish("tcp://127.0.0.1:5555")?.bind();
 //! ```
 //!
 //! To learn more about each socket type usage. See [modules](#modules) below.

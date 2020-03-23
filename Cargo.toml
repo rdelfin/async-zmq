@@ -1,9 +1,11 @@
 [package]
 name = "async_zmq"
-version = "0.0.4"
+version = "0.1.0"
 authors = ["Yu-Wei Wu <wusyong9104@gmail.com>"]
 edition = "2018"
-description = "WIP"
+description = "Async version for ZeroMQ bindings"
+keywords = ["async", "bindings", "protocol", "zmq"]
+categories = ["Asynchronous", "API bindings", "Concurrency", "Network programming"]
 license = "MIT/Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/wusyong/async-zmq"

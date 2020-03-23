@@ -1,4 +1,4 @@
-name: General Tests 
+name: Main 
 
 on:
   pull_request:
