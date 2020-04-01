@@ -19,7 +19,7 @@ use std::task::{Context, Poll};
 
 use zmq::{Error, SocketType};
 
-use crate::socket::{Broker, MessageBuf, SocketBuilder, ZmqSocket};
+use crate::socket::{Broker, MessageBuf, SocketBuilder, SocketEvented};
 use crate::{Sink, Stream};
 
 /// Create a ZMQ socket with ROUTER type
@@ -35,7 +35,7 @@ pub struct Router(Broker);
 impl Router {
     /// Represent as `Socket` from zmq crate in case you want to call its methods.
     pub fn as_raw_socket(&self) -> &zmq::Socket {
-        &self.0.socket.get_ref().0
+        &self.0.socket.get_ref()
     }
 }
 
@@ -70,7 +70,7 @@ impl Stream for Router {
 impl From<zmq::Socket> for Router {
     fn from(socket: zmq::Socket) -> Self {
         Self(Broker {
-            socket: ZmqSocket::from(socket),
+            socket: SocketEvented::from(socket),
             buffer: MessageBuf::default(),
         })
     }

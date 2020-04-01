@@ -30,7 +30,7 @@ use std::task::{Context, Poll};
 
 use zmq::{Error, SocketType};
 
-use crate::socket::{MessageBuf, Reciever, SocketBuilder, ZmqSocket};
+use crate::socket::{MessageBuf, Reciever, SocketBuilder, SocketEvented};
 use crate::Stream;
 
 /// Create a ZMQ socket with STREAM type
@@ -46,7 +46,7 @@ pub struct ZmqStream(Reciever);
 impl From<zmq::Socket> for ZmqStream {
     fn from(socket: zmq::Socket) -> Self {
         Self(Reciever {
-            socket: ZmqSocket::from(socket),
+            socket: SocketEvented::from(socket),
         })
     }
 }
@@ -62,6 +62,6 @@ impl Stream for ZmqStream {
 impl ZmqStream {
     /// Represent as `Socket` from zmq crate in case you want to call its methods.
     pub fn as_raw_socket(&self) -> &zmq::Socket {
-        &self.0.socket.get_ref().0
+        &self.0.socket.get_ref()
     }
 }

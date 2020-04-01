@@ -3,12 +3,15 @@ use std::convert::Into;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
-use async_std::task::ready;
+// use async_std::task::ready;
+use futures::ready;
+use mio::Ready;
 use zmq::Error;
 
 use crate::evented;
-use crate::watcher::Watcher;
+// use crate::watcher::Watcher;
 use crate::{Message, Sink, Stream};
+use tokio::io::PollEvented;
 
 /// Alias type for Message queue.
 ///
@@ -85,27 +88,37 @@ where
     }
 }
 
-pub(crate) type ZmqSocket = Watcher<evented::ZmqSocket>;
+pub(crate) type ZmqEvented = PollEvented<evented::ZmqSocket>;
 
-impl ZmqSocket {
+pub(crate) struct SocketEvented {
+    evented: ZmqEvented,
+}
+
+impl SocketEvented {
     pub(crate) fn as_raw_socket(&self) -> &zmq::Socket {
-        &self.get_ref().0
+        &self.evented.get_ref().0
+    }
+
+    pub(crate) fn get_ref(&self) -> &zmq::Socket {
+        &self.evented.get_ref().0
     }
 }
 
-impl From<zmq::Socket> for ZmqSocket {
+impl From<zmq::Socket> for SocketEvented {
     fn from(socket: zmq::Socket) -> Self {
-        Watcher::new(evented::ZmqSocket(socket))
+        Self {
+            evented: ZmqEvented::new(evented::ZmqSocket(socket)).unwrap(),
+        }
     }
 }
 
-impl ZmqSocket {
+impl SocketEvented {
     pub(crate) fn send(
         &self,
         cx: &mut Context<'_>,
         buffer: &mut MessageBuf,
     ) -> Poll<Result<(), Error>> {
-        ready!(self.poll_write_ready(cx));
+        ready!(self.evented.poll_write_ready(cx));
         ready!(self.poll_event(zmq::POLLOUT))?;
 
         while let Some(msg) = buffer.pop_front() {
@@ -125,7 +138,10 @@ impl ZmqSocket {
     }
 
     pub(crate) fn recv(&self, cx: &mut Context<'_>) -> Poll<Result<MessageBuf, Error>> {
-        ready!(self.poll_read_ready(cx));
+        match self.evented.poll_read_ready(cx, Ready::readable()) {
+            Poll::Ready(_) => {}
+            Poll::Pending => return Poll::Pending,
+        };
         ready!(self.poll_event(zmq::POLLIN))?;
 
         let mut buffer = MessageBuf::default();
@@ -141,21 +157,26 @@ impl ZmqSocket {
                 Err(e) => return Poll::Ready(Err(e.into())),
             }
         }
-
         Poll::Ready(Ok(buffer))
     }
 
     fn poll_event(&self, event: zmq::PollEvents) -> Poll<Result<(), Error>> {
+        match self.as_raw_socket().poll(event, 100) {
+            Ok(_) => {}
+            Err(e) => return Poll::Ready(Err(e)),
+        };
+
         if self.as_raw_socket().get_events()?.contains(event) {
             Poll::Ready(Ok(()))
         } else {
-            Poll::Ready(Err(Error::EAGAIN))
+            // Poll::Ready(Err(Error::EAGAIN))
+            Poll::Pending
         }
     }
 }
 
 pub(crate) struct Sender {
-    pub(crate) socket: ZmqSocket,
+    pub(crate) socket: SocketEvented,
     pub(crate) buffer: MessageBuf,
 }
 
@@ -182,7 +203,7 @@ impl<T: Into<MessageBuf>> Sink<T> for Sender {
 }
 
 pub(crate) struct Reciever {
-    pub(crate) socket: ZmqSocket,
+    pub(crate) socket: SocketEvented,
 }
 
 impl Stream for Reciever {
@@ -194,7 +215,7 @@ impl Stream for Reciever {
 }
 
 pub(crate) struct Broker {
-    pub(crate) socket: ZmqSocket,
+    pub(crate) socket: SocketEvented,
     pub(crate) buffer: MessageBuf,
 }
 

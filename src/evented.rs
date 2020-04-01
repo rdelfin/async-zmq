@@ -12,6 +12,7 @@ impl ZmqSocket {
     }
 }
 */
+
 impl Evented for ZmqSocket {
     fn register(
         &self,

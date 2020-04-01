@@ -63,7 +63,7 @@ pub mod xsubscribe;
 
 mod evented;
 mod socket;
-mod watcher;
+// mod watcher;
 
 /// The prelude re-exports most commonly used traits and macros from this crate.
 pub mod prelude {
