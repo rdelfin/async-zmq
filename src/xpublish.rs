@@ -26,10 +26,12 @@
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
+use crate::{
+    runtime::{IntoSocket, ZmqSocket},
+    socket::{Broker, MessageBuf, SocketBuilder},
+    Sink, Stream,
+};
 use zmq::{Error, SocketType};
-
-use crate::socket::{Broker, MessageBuf, SocketBuilder, SocketEvented};
-use crate::{Sink, Stream};
 
 /// Create a ZMQ socket with XPUB type
 pub fn xpublish(endpoint: &str) -> Result<SocketBuilder<'_, XPublish>, zmq::Error> {
@@ -44,7 +46,7 @@ pub struct XPublish(Broker);
 impl XPublish {
     /// Represent as `Socket` from zmq crate in case you want to call its methods.
     pub fn as_raw_socket(&self) -> &zmq::Socket {
-        &self.0.socket.get_ref()
+        &self.0.socket.into_socket()
     }
 }
 
@@ -79,7 +81,7 @@ impl Stream for XPublish {
 impl From<zmq::Socket> for XPublish {
     fn from(socket: zmq::Socket) -> Self {
         Self(Broker {
-            socket: SocketEvented::from(socket),
+            socket: ZmqSocket::from(socket),
             buffer: MessageBuf::default(),
         })
     }

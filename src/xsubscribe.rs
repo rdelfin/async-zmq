@@ -34,8 +34,11 @@ use std::task::{Context, Poll};
 
 use zmq::{Error, SocketType};
 
-use crate::socket::{MessageBuf, Reciever, SocketBuilder, SocketEvented};
-use crate::Stream;
+use crate::{
+    runtime::{IntoSocket, ZmqSocket},
+    socket::{MessageBuf, Reciever, SocketBuilder},
+    Stream,
+};
 
 /// Create a ZMQ socket with XSUB type
 pub fn xsubscribe(endpoint: &str) -> Result<SocketBuilder<'_, XSubscribe>, zmq::Error> {
@@ -50,7 +53,7 @@ pub struct XSubscribe(Reciever);
 impl From<zmq::Socket> for XSubscribe {
     fn from(socket: zmq::Socket) -> Self {
         Self(Reciever {
-            socket: SocketEvented::from(socket),
+            socket: ZmqSocket::from(socket),
         })
     }
 }
@@ -76,6 +79,6 @@ impl XSubscribe {
 
     /// Represent as `Socket` from zmq crate in case you want to call its methods.
     pub fn as_raw_socket(&self) -> &zmq::Socket {
-        &self.0.socket.get_ref()
+        &self.0.socket.into_socket()
     }
 }

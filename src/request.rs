@@ -19,12 +19,13 @@
 //!
 //! [`request`]: fn.request.html
 
-use std::sync::atomic::{AtomicBool, Ordering};
-
-use zmq::{Error, SocketType};
-
-use crate::socket::{MessageBuf, Sender, SocketBuilder, SocketEvented};
+use crate::{
+    runtime::{InnerSocket, IntoSocket, ZmqSocket},
+    socket::{MessageBuf, Sender, SocketBuilder},
+};
 use futures::future::poll_fn;
+use std::sync::atomic::{AtomicBool, Ordering};
+use zmq::{Error, SocketType};
 
 /// Create a ZMQ socket with REQ type
 pub fn request(endpoint: &str) -> Result<SocketBuilder<'_, Request>, zmq::Error> {
@@ -43,7 +44,7 @@ impl From<zmq::Socket> for Request {
     fn from(socket: zmq::Socket) -> Self {
         Self {
             inner: Sender {
-                socket: SocketEvented::from(socket),
+                socket: ZmqSocket::from(socket),
                 buffer: MessageBuf::default(),
             },
             received: AtomicBool::new(false),
@@ -70,6 +71,6 @@ impl Request {
 
     /// Represent as `Socket` from zmq crate in case you want to call its methods.
     pub async fn as_raw_socket(&self) -> &zmq::Socket {
-        &self.inner.socket.get_ref()
+        &self.inner.socket.into_socket()
     }
 }

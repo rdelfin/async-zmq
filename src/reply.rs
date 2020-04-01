@@ -19,12 +19,20 @@
 //!
 //! [`reply`]: fn.reply.html
 
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::{
+    pin::Pin,
+    sync::atomic::{AtomicBool, Ordering},
+    task::{Context, Poll},
+};
 
 use zmq::{Error, SocketType};
 
-use crate::socket::{MessageBuf, Sender, SocketBuilder, SocketEvented};
-use futures::future::poll_fn;
+use crate::{
+    runtime::{InnerSocket, IntoSocket, ZmqSocket},
+    socket::{MessageBuf, Sender, SocketBuilder},
+};
+
+use futures::{future::poll_fn, Stream};
 
 /// Create a ZMQ socket with REP type
 pub fn reply(endpoint: &str) -> Result<SocketBuilder<'_, Reply>, zmq::Error> {
@@ -43,7 +51,7 @@ impl From<zmq::Socket> for Reply {
     fn from(socket: zmq::Socket) -> Self {
         Self {
             inner: Sender {
-                socket: SocketEvented::from(socket),
+                socket: ZmqSocket::from(socket),
                 buffer: MessageBuf::default(),
             },
             received: AtomicBool::new(false),
@@ -70,6 +78,14 @@ impl Reply {
 
     /// Represent as `Socket` from zmq crate in case you want to call its methods.
     pub fn as_raw_socket(&self) -> &zmq::Socket {
-        &self.inner.socket.get_ref()
+        &self.inner.socket.into_socket()
+    }
+}
+
+impl Stream for Reply {
+    type Item = Result<MessageBuf, Error>;
+
+    fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
+        Poll::Ready(Some(Ok(futures::ready!(self.inner.socket.recv(cx))?)))
     }
 }
