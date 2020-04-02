@@ -1,10 +1,7 @@
 //! Socket type registered in tokio reactor
 
 use crate::{
-    reactor::{
-        evented,
-        AsRawSocket,
-    },
+    reactor::{evented, AsRawSocket},
     socket::MessageBuf,
 };
 
@@ -35,7 +32,11 @@ impl ZmqSocket {
         }
     }
 
-    pub(crate) fn send(&self, cx: &mut Context<'_>, buffer: &mut MessageBuf) -> Poll<Result<(), Error>> {
+    pub(crate) fn send(
+        &self,
+        cx: &mut Context<'_>,
+        buffer: &mut MessageBuf,
+    ) -> Poll<Result<(), Error>> {
         futures::ready!(self.evented.poll_write_ready(cx));
         futures::ready!(self.poll_event(zmq::POLLOUT))?;
 

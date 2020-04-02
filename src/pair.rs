@@ -26,16 +26,16 @@
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
-use zmq::{Error, SocketType};
+use zmq::SocketType;
 
 use crate::{
     reactor::{AsRawSocket, ZmqSocket},
     socket::{Broker, MessageBuf, SocketBuilder},
-    Sink, Stream,
+    RecvError, SendError, Sink, SocketError, Stream,
 };
 
 /// Create a ZMQ socket with PAIR type
-pub fn pair(endpoint: &str) -> Result<SocketBuilder<'_, Pair>, zmq::Error> {
+pub fn pair(endpoint: &str) -> Result<SocketBuilder<'_, Pair>, SocketError> {
     Ok(SocketBuilder::new(SocketType::PAIR, endpoint))
 }
 
@@ -50,30 +50,37 @@ impl Pair {
 }
 
 impl<T: Into<MessageBuf>> Sink<T> for Pair {
-    type Error = Error;
+    type Error = SendError;
 
     fn poll_ready(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
         Sink::<T>::poll_ready(Pin::new(&mut self.get_mut().0), cx)
+            .map(|result| result.map_err(Into::into))
     }
 
     fn start_send(self: Pin<&mut Self>, item: T) -> Result<(), Self::Error> {
-        Pin::new(&mut self.get_mut().0).start_send(item)
+        Pin::new(&mut self.get_mut().0)
+            .start_send(item)
+            .map_err(Into::into)
     }
 
-    fn poll_flush(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Error>> {
+    fn poll_flush(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
         Sink::<T>::poll_flush(Pin::new(&mut self.get_mut().0), cx)
+            .map(|result| result.map_err(Into::into))
     }
 
-    fn poll_close(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Error>> {
+    fn poll_close(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
         Sink::<T>::poll_close(Pin::new(&mut self.get_mut().0), cx)
+            .map(|result| result.map_err(Into::into))
     }
 }
 
 impl Stream for Pair {
-    type Item = Result<MessageBuf, Error>;
+    type Item = Result<MessageBuf, RecvError>;
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-        Pin::new(&mut self.get_mut().0).poll_next(cx)
+        Pin::new(&mut self.get_mut().0)
+            .poll_next(cx)
+            .map(|poll| poll.map(|result| result.map_err(Into::into)))
     }
 }
 

@@ -22,13 +22,14 @@
 use crate::{
     reactor::{AsRawSocket, ZmqSocket},
     socket::{MessageBuf, Sender, SocketBuilder},
+    RequestReplyError, SocketError,
 };
 use futures::future::poll_fn;
 use std::sync::atomic::{AtomicBool, Ordering};
-use zmq::{Error, SocketType};
+use zmq::SocketType;
 
 /// Create a ZMQ socket with REQ type
-pub fn request(endpoint: &str) -> Result<SocketBuilder<'_, Request>, zmq::Error> {
+pub fn request(endpoint: &str) -> Result<SocketBuilder<'_, Request>, SocketError> {
     Ok(SocketBuilder::new(SocketType::REQ, endpoint))
 }
 
@@ -53,7 +54,7 @@ impl From<zmq::Socket> for Request {
 impl Request {
     /// Send request to REP/ROUTER socket. This should be the first method to be called, and then
     /// continue with send/receive pattern in synchronous way.
-    pub async fn send<T: Into<MessageBuf>>(&self, msg: T) -> Result<(), Error> {
+    pub async fn send<T: Into<MessageBuf>>(&self, msg: T) -> Result<(), RequestReplyError> {
         let mut msg = msg.into();
         let res = poll_fn(move |cx| self.inner.socket.send(cx, &mut msg)).await?;
         self.received.store(false, Ordering::Relaxed);
@@ -61,7 +62,7 @@ impl Request {
     }
 
     /// Receive reply from REP/ROUTER socket. [`send`](#method.send) must be called first in order to receive reply.
-    pub async fn recv(&self) -> Result<MessageBuf, Error> {
+    pub async fn recv(&self) -> Result<MessageBuf, RequestReplyError> {
         let msg = poll_fn(|cx| self.inner.socket.recv(cx)).await?;
         self.received.store(true, Ordering::Relaxed);
         Ok(msg)

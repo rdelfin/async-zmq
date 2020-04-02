@@ -3,10 +3,7 @@ use std::convert::Into;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
-use crate::{
-    reactor::ZmqSocket,
-    Message, Sink, Stream,
-};
+use crate::{reactor::ZmqSocket, Message, Sink, Stream};
 use futures::ready;
 use zmq::Error;
 
