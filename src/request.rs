@@ -20,7 +20,7 @@
 //! [`request`]: fn.request.html
 
 use crate::{
-    runtime::{InnerSocket, IntoSocket, ZmqSocket},
+    runtime::{InnerSocket, AsSocket, ZmqSocket},
     socket::{MessageBuf, Sender, SocketBuilder},
 };
 use futures::future::poll_fn;
@@ -71,6 +71,6 @@ impl Request {
 
     /// Represent as `Socket` from zmq crate in case you want to call its methods.
     pub async fn as_raw_socket(&self) -> &zmq::Socket {
-        &self.inner.socket.into_socket()
+        &self.inner.socket.as_socket()
     }
 }

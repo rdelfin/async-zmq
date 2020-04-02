@@ -5,7 +5,7 @@ use std::task::Context;
 ///
 pub(crate) trait InnerSocket: Sized
 where
-    Self: IntoSocket,
+    Self: AsSocket,
 {
     type Error;
 
@@ -35,9 +35,9 @@ where
 ///
 /// Into Socket
 ///
-pub(crate) trait IntoSocket {
+pub(crate) trait AsSocket {
     ///
     /// Socket
     ///
-    fn into_socket(&self) -> &zmq::Socket;
+    fn as_socket(&self) -> &zmq::Socket;
 }

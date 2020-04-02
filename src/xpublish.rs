@@ -27,7 +27,7 @@ use std::pin::Pin;
 use std::task::{Context, Poll};
 
 use crate::{
-    runtime::{IntoSocket, ZmqSocket},
+    runtime::{AsSocket, ZmqSocket},
     socket::{Broker, MessageBuf, SocketBuilder},
     Sink, Stream,
 };
@@ -46,7 +46,7 @@ pub struct XPublish(Broker);
 impl XPublish {
     /// Represent as `Socket` from zmq crate in case you want to call its methods.
     pub fn as_raw_socket(&self) -> &zmq::Socket {
-        &self.0.socket.into_socket()
+        &self.0.socket.as_socket()
     }
 }
 

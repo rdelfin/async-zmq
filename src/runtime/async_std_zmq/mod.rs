@@ -5,7 +5,7 @@ mod watcher;
 pub(crate) use watcher::Watcher;
 
 use crate::{
-    runtime::{evented, InnerSocket, IntoSocket},
+    runtime::{evented, InnerSocket, AsSocket},
     socket::MessageBuf,
 };
 
@@ -17,7 +17,7 @@ pub(crate) type ZmqSocket = Watcher<evented::ZmqSocket>;
 
 impl ZmqSocket {
     fn poll_event(&self, event: zmq::PollEvents) -> Poll<Result<(), Error>> {
-        if self.into_socket().get_events()?.contains(event) {
+        if self.as_socket().get_events()?.contains(event) {
             Poll::Ready(Ok(()))
         } else {
             Poll::Ready(Err(Error::EAGAIN))
@@ -31,8 +31,8 @@ impl From<zmq::Socket> for ZmqSocket {
     }
 }
 
-impl IntoSocket for ZmqSocket {
-    fn into_socket(&self) -> &zmq::Socket {
+impl AsSocket for ZmqSocket {
+    fn as_socket(&self) -> &zmq::Socket {
         &self.get_ref().0
     }
 }
@@ -63,7 +63,7 @@ impl InnerSocket for ZmqSocket {
                 flags |= zmq::SNDMORE;
             }
 
-            match self.into_socket().send(msg, flags) {
+            match self.as_socket().send(msg, flags) {
                 Ok(_) => {}
                 Err(zmq::Error::EAGAIN) => return Poll::Pending,
                 Err(e) => return Poll::Ready(Err(e.into())),
@@ -85,7 +85,7 @@ impl InnerSocket for ZmqSocket {
 
         while more {
             let mut msg = zmq::Message::new();
-            match self.into_socket().recv(&mut msg, zmq::DONTWAIT) {
+            match self.as_socket().recv(&mut msg, zmq::DONTWAIT) {
                 Ok(_) => {
                     more = msg.get_more();
                     buffer.0.push_back(msg);

@@ -28,7 +28,7 @@ use std::{
 use zmq::{Error, SocketType};
 
 use crate::{
-    runtime::{InnerSocket, IntoSocket, ZmqSocket},
+    runtime::{InnerSocket, AsSocket, ZmqSocket},
     socket::{MessageBuf, Sender, SocketBuilder},
 };
 
@@ -78,7 +78,7 @@ impl Reply {
 
     /// Represent as `Socket` from zmq crate in case you want to call its methods.
     pub fn as_raw_socket(&self) -> &zmq::Socket {
-        &self.inner.socket.into_socket()
+        &self.inner.socket.as_socket()
     }
 }
 

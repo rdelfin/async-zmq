@@ -12,4 +12,4 @@ mod traits;
 pub(crate) use async_std_zmq::ZmqSocket;
 #[cfg(feature = "rt-tokio")]
 pub(crate) use tokio_zmq::ZmqSocket;
-pub(crate) use traits::{InnerSocket, IntoSocket};
+pub(crate) use traits::{InnerSocket, AsSocket};
