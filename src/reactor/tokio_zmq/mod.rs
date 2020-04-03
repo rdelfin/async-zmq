@@ -3,7 +3,7 @@
 use crate::{
     reactor::{
         evented,
-        traits::AsRawSocket,
+        AsRawSocket,
     },
     socket::MessageBuf,
 };
