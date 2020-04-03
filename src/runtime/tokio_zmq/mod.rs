@@ -14,14 +14,10 @@ use std::task::{Context, Poll};
 use tokio::io::PollEvented;
 use zmq::Error;
 
-///
 /// Poll Evented Socket
-///
 pub(crate) type ZmqSocketEvented = PollEvented<evented::ZmqSocket>;
 
-///
 /// ZMQ Socket
-///
 pub(crate) struct ZmqSocket {
     evented: ZmqSocketEvented,
 }
@@ -69,9 +65,7 @@ impl InnerSocket for ZmqSocket {
     /// the future that receive messages from a ZMQ socket
     type Response = Poll<Result<Self::Item, Self::Error>>;
 
-    ///
     /// Send buffer data
-    ///
     fn send(&self, cx: &mut Context<'_>, buffer: &mut Self::Item) -> Self::Request {
         futures::ready!(self.evented.poll_write_ready(cx));
         futures::ready!(self.poll_event(zmq::POLLOUT))?;
@@ -92,9 +86,7 @@ impl InnerSocket for ZmqSocket {
         Poll::Ready(Ok(()))
     }
 
-    ///
     /// Recive data
-    ///
     fn recv(&self, cx: &mut Context<'_>) -> Self::Response {
         let e_ready = Ready::readable();
 

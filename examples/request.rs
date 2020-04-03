@@ -1,6 +1,5 @@
-//!
 //! cargo run --example request --features="rt-tokio" --no-default-features
-//!
+
 use async_zmq::Result;
 use std::ops::Deref;
 

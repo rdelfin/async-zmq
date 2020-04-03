@@ -1,6 +1,5 @@
-//!
 //! Async-std runtime Settings modules
-//!
+
 mod watcher;
 pub(crate) use watcher::Watcher;
 

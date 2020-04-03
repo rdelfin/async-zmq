@@ -1,6 +1,5 @@
-//!
 //! Runtimes settup module
-//!
+
 #[cfg(feature = "rt-async")]
 mod async_std_zmq;
 pub(crate) mod evented;
