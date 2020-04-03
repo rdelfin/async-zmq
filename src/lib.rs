@@ -80,7 +80,7 @@ pub mod prelude {
     pub use crate::xsubscribe::{xsubscribe, XSubscribe};
     pub use futures::sink::{Sink, SinkExt};
     pub use futures::stream::{Stream, StreamExt};
-    pub use zmq::{self, Error, Message, Result};
+    pub use zmq::{self, Error, Message, Result, Context};
     pub use crate::reactor::AsRawSocket;
 }
 

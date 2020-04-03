@@ -42,9 +42,7 @@ use crate::{
 
 /// Create a ZMQ socket with XSUB type
 pub fn xsubscribe(endpoint: &str) -> Result<SocketBuilder<'_, XSubscribe>, zmq::Error> {
-    let socket = zmq::Context::new().socket(SocketType::XSUB)?;
-
-    Ok(SocketBuilder::new(socket, endpoint))
+    Ok(SocketBuilder::new(SocketType::XSUB, endpoint))
 }
 
 /// The async wrapper of ZMQ socket with XSUB type

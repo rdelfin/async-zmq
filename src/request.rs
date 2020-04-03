@@ -29,9 +29,7 @@ use zmq::{Error, SocketType};
 
 /// Create a ZMQ socket with REQ type
 pub fn request(endpoint: &str) -> Result<SocketBuilder<'_, Request>, zmq::Error> {
-    let socket = zmq::Context::new().socket(SocketType::REQ)?;
-
-    Ok(SocketBuilder::new(socket, endpoint))
+    Ok(SocketBuilder::new(SocketType::REQ, endpoint))
 }
 
 /// The async wrapper of ZMQ socket with REQ type

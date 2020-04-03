@@ -36,9 +36,7 @@ use crate::{
 
 /// Create a ZMQ socket with PAIR type
 pub fn pair(endpoint: &str) -> Result<SocketBuilder<'_, Pair>, zmq::Error> {
-    let socket = zmq::Context::new().socket(SocketType::PAIR)?;
-
-    Ok(SocketBuilder::new(socket, endpoint))
+    Ok(SocketBuilder::new(SocketType::PAIR, endpoint))
 }
 
 /// The async wrapper of ZMQ socket with PAIR type

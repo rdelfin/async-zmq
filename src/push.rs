@@ -33,9 +33,7 @@ use crate::{
 
 /// Create a ZMQ socket with PUSH type
 pub fn push(endpoint: &str) -> Result<SocketBuilder<'_, Push>, zmq::Error> {
-    let socket = zmq::Context::new().socket(SocketType::PUSH)?;
-
-    Ok(SocketBuilder::new(socket, endpoint))
+    Ok(SocketBuilder::new(SocketType::PUSH, endpoint))
 }
 
 /// The async wrapper of ZMQ socket with PUSH type

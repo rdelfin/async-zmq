@@ -36,9 +36,7 @@ use futures::{future::poll_fn, Stream};
 
 /// Create a ZMQ socket with REP type
 pub fn reply(endpoint: &str) -> Result<SocketBuilder<'_, Reply>, zmq::Error> {
-    let socket = zmq::Context::new().socket(SocketType::REP)?;
-
-    Ok(SocketBuilder::new(socket, endpoint))
+    Ok(SocketBuilder::new(SocketType::REP, endpoint))
 }
 
 /// The async wrapper of ZMQ socket with REP type

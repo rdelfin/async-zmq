@@ -38,9 +38,7 @@ use crate::{
 
 /// Create a ZMQ socket with PULL type
 pub fn pull(endpoint: &str) -> Result<SocketBuilder<'_, Pull>, zmq::Error> {
-    let socket = zmq::Context::new().socket(SocketType::PULL)?;
-
-    Ok(SocketBuilder::new(socket, endpoint))
+    Ok(SocketBuilder::new(SocketType::PULL, endpoint))
 }
 
 /// The async wrapper of ZMQ socket with PULL type

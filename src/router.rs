@@ -26,9 +26,7 @@ use zmq::{Error, SocketType};
 
 /// Create a ZMQ socket with ROUTER type
 pub fn router(endpoint: &str) -> Result<SocketBuilder<'_, Router>, zmq::Error> {
-    let socket = zmq::Context::new().socket(SocketType::ROUTER)?;
-
-    Ok(SocketBuilder::new(socket, endpoint))
+    Ok(SocketBuilder::new(SocketType::ROUTER, endpoint))
 }
 
 /// The async wrapper of ZMQ socket with ROUTER type

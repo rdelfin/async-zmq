@@ -35,9 +35,7 @@ use zmq::{Error, SocketType};
 
 /// Create a ZMQ socket with XPUB type
 pub fn xpublish(endpoint: &str) -> Result<SocketBuilder<'_, XPublish>, zmq::Error> {
-    let socket = zmq::Context::new().socket(SocketType::XPUB)?;
-
-    Ok(SocketBuilder::new(socket, endpoint))
+    Ok(SocketBuilder::new(SocketType::XPUB, endpoint))
 }
 
 /// The async wrapper of ZMQ socket with XPUB type

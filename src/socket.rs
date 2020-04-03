@@ -56,7 +56,8 @@ impl std::ops::DerefMut for MessageBuf {
 
 /// ZMQ socket builder. It lets user to either bind or connect the socket of their choice.
 pub struct SocketBuilder<'a, T> {
-    pub(crate) socket: zmq::Socket,
+    pub(crate) context: Option<&'a zmq::Context>,
+    pub(crate) socket_type: zmq::SocketType,
     pub(crate) endpoint: &'a str,
     _phantom: std::marker::PhantomData<T>,
 }
@@ -65,23 +66,50 @@ impl<'a, T> SocketBuilder<'a, T>
 where
     T: From<zmq::Socket>,
 {
-    pub(crate) fn new(socket: zmq::Socket, endpoint: &'a str) -> Self {
+    pub(crate) fn new(socket_type: zmq::SocketType, endpoint: &'a str) -> Self {
         Self {
-            socket,
+            context: None,
+            socket_type,
             endpoint,
             _phantom: Default::default(),
         }
     }
+
+    /// Get the zmq context to share with
+    pub fn get_context(&self) -> Option<&zmq::Context> {
+        self.context
+    }
+
+    /// Create the zmq socket with given context
+    pub fn with_context(self, context: &'a zmq::Context) -> Self {
+        Self {
+            context: Some(context),
+            socket_type: self.socket_type,
+            endpoint: self.endpoint,
+            _phantom: Default::default(),
+        }
+    }
+
     /// Connect to the ZMQ endpoint based on given URI
     pub fn connect(self) -> Result<T, Error> {
-        self.socket.connect(self.endpoint)?;
-        Ok(T::from(self.socket))
+        let socket = match self.context {
+            Some(cx) => cx.socket(self.socket_type)?,
+            None => zmq::Context::new().socket(self.socket_type)?,
+        };
+
+        socket.connect(self.endpoint)?;
+        Ok(T::from(socket))
     }
 
     /// Bind to the ZMQ endpoint based on given URI
     pub fn bind(self) -> Result<T, Error> {
-        self.socket.bind(self.endpoint)?;
-        Ok(T::from(self.socket))
+        let socket = match self.context {
+            Some(cx) => cx.socket(self.socket_type)?,
+            None => zmq::Context::new().socket(self.socket_type)?,
+        };
+
+        socket.bind(self.endpoint)?;
+        Ok(T::from(socket))
     }
 }
 

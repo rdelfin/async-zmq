@@ -38,9 +38,7 @@ use crate::{
 
 /// Create a ZMQ socket with STREAM type
 pub fn stream(endpoint: &str) -> Result<SocketBuilder<'_, ZmqStream>, zmq::Error> {
-    let socket = zmq::Context::new().socket(SocketType::STREAM)?;
-
-    Ok(SocketBuilder::new(socket, endpoint))
+    Ok(SocketBuilder::new(SocketType::STREAM, endpoint))
 }
 
 /// The async wrapper of ZMQ socket with STREAM type

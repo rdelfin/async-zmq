@@ -33,9 +33,7 @@ use crate::{
 
 /// Create a ZMQ socket with PUB type
 pub fn publish(endpoint: &str) -> Result<SocketBuilder<'_, Publish>, zmq::Error> {
-    let socket = zmq::Context::new().socket(SocketType::PUB)?;
-
-    Ok(SocketBuilder::new(socket, endpoint))
+    Ok(SocketBuilder::new(SocketType::PUB, endpoint))
 }
 
 /// The async wrapper of ZMQ socket with PUB type

@@ -28,9 +28,7 @@ use zmq::{Error, SocketType};
 
 /// Create a ZMQ socket with DEALER type
 pub fn dealer(endpoint: &str) -> Result<SocketBuilder<'_, Dealer>, zmq::Error> {
-    let socket = zmq::Context::new().socket(SocketType::DEALER)?;
-
-    Ok(SocketBuilder::new(socket, endpoint))
+    Ok(SocketBuilder::new(SocketType::DEALER, endpoint))
 }
 
 /// The async wrapper of ZMQ socket with DEALER type

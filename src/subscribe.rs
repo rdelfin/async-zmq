@@ -42,9 +42,7 @@ use crate::{
 
 /// Create a ZMQ socket with SUB type
 pub fn subscribe(endpoint: &str) -> Result<SocketBuilder<'_, Subscribe>, zmq::Error> {
-    let socket = zmq::Context::new().socket(SocketType::SUB)?;
-
-    Ok(SocketBuilder::new(socket, endpoint))
+    Ok(SocketBuilder::new(SocketType::SUB, endpoint))
 }
 
 /// The async wrapper of ZMQ socket with SUB type
