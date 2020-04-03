@@ -1,10 +1,9 @@
-//!
-//! Tokio Runtime Setting Module
-//!
+//! Socket type registered in tokio reactor
+
 use crate::{
     reactor::{
         evented,
-        traits::{InnerSocket, AsSocket},
+        traits::AsRawSocket,
     },
     socket::MessageBuf,
 };
@@ -32,41 +31,11 @@ impl ZmqSocket {
         if self.as_socket().get_events()?.contains(event) {
             Poll::Ready(Ok(()))
         } else {
-            // Poll::Ready(Err(Error::EAGAIN))
             Poll::Pending
         }
     }
-}
 
-impl AsSocket for ZmqSocket {
-    fn as_socket(&self) -> &zmq::Socket {
-        &self.evented.get_ref().0
-    }
-}
-
-impl From<zmq::Socket> for ZmqSocket {
-    fn from(socket: zmq::Socket) -> Self {
-        Self {
-            evented: ZmqSocketEvented::new(evented::ZmqSocket(socket)).unwrap(),
-        }
-    }
-}
-
-impl InnerSocket for ZmqSocket {
-    /// Error type
-    type Error = zmq::Error;
-
-    /// Messages
-    type Item = MessageBuf;
-
-    /// the future that send messages to a ZMQ socket
-    type Request = Poll<Result<(), Self::Error>>;
-
-    /// the future that receive messages from a ZMQ socket
-    type Response = Poll<Result<Self::Item, Self::Error>>;
-
-    /// Send buffer data
-    fn send(&self, cx: &mut Context<'_>, buffer: &mut Self::Item) -> Self::Request {
+    pub(crate) fn send(&self, cx: &mut Context<'_>, buffer: &mut MessageBuf) -> Poll<Result<(), Error>> {
         futures::ready!(self.evented.poll_write_ready(cx));
         futures::ready!(self.poll_event(zmq::POLLOUT))?;
 
@@ -86,8 +55,7 @@ impl InnerSocket for ZmqSocket {
         Poll::Ready(Ok(()))
     }
 
-    /// Recive data
-    fn recv(&self, cx: &mut Context<'_>) -> Self::Response {
+    pub(crate) fn recv(&self, cx: &mut Context<'_>) -> Poll<Result<MessageBuf, Error>> {
         let e_ready = Ready::readable();
 
         match self.evented.poll_read_ready(cx, e_ready) {
@@ -121,4 +89,16 @@ impl InnerSocket for ZmqSocket {
     }
 }
 
-impl ZmqSocket {}
+impl AsRawSocket for ZmqSocket {
+    fn as_socket(&self) -> &zmq::Socket {
+        &self.evented.get_ref().0
+    }
+}
+
+impl From<zmq::Socket> for ZmqSocket {
+    fn from(socket: zmq::Socket) -> Self {
+        Self {
+            evented: ZmqSocketEvented::new(evented::ZmqSocket(socket)).unwrap(),
+        }
+    }
+}

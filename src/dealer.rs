@@ -20,7 +20,7 @@ use std::{
 };
 
 use crate::{
-    reactor::{AsSocket, ZmqSocket},
+    reactor::{AsRawSocket, ZmqSocket},
     socket::{Broker, MessageBuf, SocketBuilder},
     Sink, Stream,
 };

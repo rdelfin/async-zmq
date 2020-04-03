@@ -1,10 +1,10 @@
-//! Async-std reactor Settings modules
+//! Socket type registered in async-std reactor
 
 mod watcher;
 pub(crate) use watcher::Watcher;
 
 use crate::{
-    reactor::{evented, InnerSocket, AsSocket},
+    reactor::{evented, AsRawSocket},
     socket::MessageBuf,
 };
 
@@ -22,37 +22,8 @@ impl ZmqSocket {
             Poll::Ready(Err(Error::EAGAIN))
         }
     }
-}
 
-impl From<zmq::Socket> for ZmqSocket {
-    fn from(socket: zmq::Socket) -> Self {
-        Watcher::new(evented::ZmqSocket(socket))
-    }
-}
-
-impl AsSocket for ZmqSocket {
-    fn as_socket(&self) -> &zmq::Socket {
-        &self.get_ref().0
-    }
-}
-
-impl InnerSocket for ZmqSocket {
-    /// Error type
-    type Error = zmq::Error;
-
-    /// Messages
-    type Item = MessageBuf;
-
-    /// the future that send messages to a ZMQ socket
-    type Request = Poll<Result<(), Self::Error>>;
-
-    /// the future that receive messages from a ZMQ socket
-    type Response = Poll<Result<Self::Item, Self::Error>>;
-
-    ///
-    /// Send buffer data
-    ///
-    fn send(&self, cx: &mut Context<'_>, buffer: &mut Self::Item) -> Self::Request {
+    pub(crate) fn send(&self, cx: &mut Context<'_>, buffer: &mut MessageBuf) -> Poll<Result<(), Error>> {
         ready!(self.poll_write_ready(cx));
         ready!(self.poll_event(zmq::POLLOUT))?;
 
@@ -64,7 +35,7 @@ impl InnerSocket for ZmqSocket {
 
             match self.as_socket().send(msg, flags) {
                 Ok(_) => {}
-                Err(zmq::Error::EAGAIN) => return Poll::Pending,
+                Err(Error::EAGAIN) => return Poll::Pending,
                 Err(e) => return Poll::Ready(Err(e.into())),
             }
         }
@@ -72,10 +43,7 @@ impl InnerSocket for ZmqSocket {
         Poll::Ready(Ok(()))
     }
 
-    ///
-    /// Recive data
-    ///
-    fn recv(&self, cx: &mut Context<'_>) -> Self::Response {
+    pub(crate) fn recv(&self, cx: &mut Context<'_>) -> Poll<Result<MessageBuf, Error>> {
         ready!(self.poll_read_ready(cx));
         ready!(self.poll_event(zmq::POLLIN))?;
 
@@ -94,5 +62,17 @@ impl InnerSocket for ZmqSocket {
         }
 
         Poll::Ready(Ok(buffer))
+    }
+}
+
+impl From<zmq::Socket> for ZmqSocket {
+    fn from(socket: zmq::Socket) -> Self {
+        Watcher::new(evented::ZmqSocket(socket))
+    }
+}
+
+impl AsRawSocket for ZmqSocket {
+    fn as_socket(&self) -> &zmq::Socket {
+        &self.get_ref().0
     }
 }

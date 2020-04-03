@@ -20,7 +20,7 @@
 //! [`request`]: fn.request.html
 
 use crate::{
-    reactor::{InnerSocket, AsSocket, ZmqSocket},
+    reactor::{AsRawSocket, ZmqSocket},
     socket::{MessageBuf, Sender, SocketBuilder},
 };
 use futures::future::poll_fn;

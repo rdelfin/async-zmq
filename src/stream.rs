@@ -31,7 +31,7 @@ use std::task::{Context, Poll};
 use zmq::{Error, SocketType};
 
 use crate::{
-    reactor::{AsSocket, ZmqSocket},
+    reactor::{AsRawSocket, ZmqSocket},
     socket::{MessageBuf, Reciever, SocketBuilder},
     Stream,
 };

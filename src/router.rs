@@ -18,7 +18,7 @@ use std::pin::Pin;
 use std::task::{Context, Poll};
 
 use crate::{
-    reactor::{AsSocket, ZmqSocket},
+    reactor::{AsRawSocket, ZmqSocket},
     socket::{Broker, MessageBuf, SocketBuilder},
     Sink, Stream,
 };

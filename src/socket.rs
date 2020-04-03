@@ -4,7 +4,7 @@ use std::pin::Pin;
 use std::task::{Context, Poll};
 
 use crate::{
-    reactor::{InnerSocket, ZmqSocket},
+    reactor::ZmqSocket,
     Message, Sink, Stream,
 };
 use futures::ready;

@@ -81,6 +81,7 @@ pub mod prelude {
     pub use futures::sink::{Sink, SinkExt};
     pub use futures::stream::{Stream, StreamExt};
     pub use zmq::{self, Error, Message, Result};
+    pub use crate::reactor::AsRawSocket;
 }
 
 pub use prelude::*;
