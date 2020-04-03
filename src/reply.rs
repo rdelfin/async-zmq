@@ -19,11 +19,20 @@
 //!
 //! [`reply`]: fn.reply.html
 
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::{
+    pin::Pin,
+    sync::atomic::{AtomicBool, Ordering},
+    task::{Context, Poll},
+};
 
 use zmq::{Error, SocketType};
 
-use crate::socket::{MessageBuf, Sender, SocketBuilder, ZmqSocket};
+use crate::{
+    runtime::{InnerSocket, AsSocket, ZmqSocket},
+    socket::{MessageBuf, Sender, SocketBuilder},
+};
+
+use futures::{future::poll_fn, Stream};
 
 /// Create a ZMQ socket with REP type
 pub fn reply(endpoint: &str) -> Result<SocketBuilder<'_, Reply>, zmq::Error> {
@@ -54,7 +63,7 @@ impl Reply {
     /// Receive request from REQ/DEALER socket. This should be the first method to be called, and then
     /// continue with receive/send pattern in synchronous way.
     pub async fn recv(&self) -> Result<MessageBuf, Error> {
-        let msg = async_std::future::poll_fn(|cx| self.inner.socket.recv(cx)).await?;
+        let msg = poll_fn(|cx| self.inner.socket.recv(cx)).await?;
         self.received.store(true, Ordering::Relaxed);
         Ok(msg)
     }
@@ -62,14 +71,21 @@ impl Reply {
     /// Send reply to REQ/DEALER socket. [`recv`](#method.recv) must be called first in order to reply.
     pub async fn send<T: Into<MessageBuf>>(&self, msg: T) -> Result<(), Error> {
         let mut msg = msg.into();
-        let res =
-            async_std::future::poll_fn(move |cx| self.inner.socket.send(cx, &mut msg)).await?;
+        let res = poll_fn(move |cx| self.inner.socket.send(cx, &mut msg)).await?;
         self.received.store(false, Ordering::Relaxed);
         Ok(res)
     }
 
     /// Represent as `Socket` from zmq crate in case you want to call its methods.
     pub fn as_raw_socket(&self) -> &zmq::Socket {
-        &self.inner.socket.get_ref().0
+        &self.inner.socket.as_socket()
+    }
+}
+
+impl Stream for Reply {
+    type Item = Result<MessageBuf, Error>;
+
+    fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
+        Poll::Ready(Some(Ok(futures::ready!(self.inner.socket.recv(cx))?)))
     }
 }

@@ -17,10 +17,12 @@
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
+use crate::{
+    runtime::{AsSocket, ZmqSocket},
+    socket::{Broker, MessageBuf, SocketBuilder},
+    Sink, Stream,
+};
 use zmq::{Error, SocketType};
-
-use crate::socket::{Broker, MessageBuf, SocketBuilder, ZmqSocket};
-use crate::{Sink, Stream};
 
 /// Create a ZMQ socket with ROUTER type
 pub fn router(endpoint: &str) -> Result<SocketBuilder<'_, Router>, zmq::Error> {
@@ -35,7 +37,7 @@ pub struct Router(Broker);
 impl Router {
     /// Represent as `Socket` from zmq crate in case you want to call its methods.
     pub fn as_raw_socket(&self) -> &zmq::Socket {
-        &self.0.socket.get_ref().0
+        &self.0.socket.as_socket()
     }
 }
 

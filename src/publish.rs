@@ -25,8 +25,11 @@ use std::task::{Context, Poll};
 
 use zmq::{Error, SocketType};
 
-use crate::socket::{MessageBuf, Sender, SocketBuilder, ZmqSocket};
-use crate::Sink;
+use crate::{
+    runtime::{AsSocket, ZmqSocket},
+    socket::{MessageBuf, Sender, SocketBuilder},
+    Sink,
+};
 
 /// Create a ZMQ socket with PUB type
 pub fn publish(endpoint: &str) -> Result<SocketBuilder<'_, Publish>, zmq::Error> {
@@ -41,7 +44,7 @@ pub struct Publish(Sender);
 impl Publish {
     /// Represent as `Socket` from zmq crate in case you want to call its methods.
     pub fn as_raw_socket(&self) -> &zmq::Socket {
-        &self.0.socket.get_ref().0
+        &self.0.socket.as_socket()
     }
 }
 
