@@ -28,7 +28,7 @@ use std::{
 use zmq::{Error, SocketType};
 
 use crate::{
-    runtime::{InnerSocket, AsSocket, ZmqSocket},
+    reactor::{InnerSocket, AsSocket, ZmqSocket},
     socket::{MessageBuf, Sender, SocketBuilder},
 };
 

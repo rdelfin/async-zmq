@@ -1,10 +1,10 @@
-//! Async-std runtime Settings modules
+//! Async-std reactor Settings modules
 
 mod watcher;
 pub(crate) use watcher::Watcher;
 
 use crate::{
-    runtime::{evented, InnerSocket, AsSocket},
+    reactor::{evented, InnerSocket, AsSocket},
     socket::MessageBuf,
 };
 

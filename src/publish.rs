@@ -26,7 +26,7 @@ use std::task::{Context, Poll};
 use zmq::{Error, SocketType};
 
 use crate::{
-    runtime::{AsSocket, ZmqSocket},
+    reactor::{AsSocket, ZmqSocket},
     socket::{MessageBuf, Sender, SocketBuilder},
     Sink,
 };

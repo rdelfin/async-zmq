@@ -8,7 +8,7 @@
 [build-bade]: https://img.shields.io/github/workflow/status/wusyong/async-zmq/Main
 
 This is high-level bindings for [`zmq`] in asynchronous manner. Crate itself uses some modules from
-[`async-std`], but it should also work on any other async runtime. The goal for this project
+[`async-std`], but it should also work on any other async reactor. The goal for this project
 is providing simple interface that is compatible with any async executor and reactor.
 
 ## TODO list

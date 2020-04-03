@@ -2,7 +2,7 @@
 //! Tokio Runtime Setting Module
 //!
 use crate::{
-    runtime::{
+    reactor::{
         evented,
         traits::{InnerSocket, AsSocket},
     },
