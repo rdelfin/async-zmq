@@ -32,7 +32,7 @@ use zmq::SocketType;
 
 use crate::{
     reactor::{AsRawSocket, ZmqSocket},
-    socket::{MessageBuf, Reciever, SocketBuilder},
+    socket::{MessageBuf, Receiver, SocketBuilder},
     RecvError, SocketError, Stream,
 };
 
@@ -42,11 +42,11 @@ pub fn stream(endpoint: &str) -> Result<SocketBuilder<'_, ZmqStream>, SocketErro
 }
 
 /// The async wrapper of ZMQ socket with STREAM type
-pub struct ZmqStream(Reciever);
+pub struct ZmqStream(Receiver);
 
 impl From<zmq::Socket> for ZmqStream {
     fn from(socket: zmq::Socket) -> Self {
-        Self(Reciever {
+        Self(Receiver {
             socket: ZmqSocket::from(socket),
         })
     }

@@ -32,7 +32,7 @@ use zmq::SocketType;
 
 use crate::{
     reactor::{AsRawSocket, ZmqSocket},
-    socket::{MessageBuf, Reciever, SocketBuilder},
+    socket::{MessageBuf, Receiver, SocketBuilder},
     RecvError, SocketError, Stream,
 };
 
@@ -42,7 +42,7 @@ pub fn pull(endpoint: &str) -> Result<SocketBuilder<'_, Pull>, SocketError> {
 }
 
 /// The async wrapper of ZMQ socket with PULL type
-pub struct Pull(Reciever);
+pub struct Pull(Receiver);
 
 impl Pull {
     /// Represent as `Socket` from zmq crate in case you want to call its methods.
@@ -53,7 +53,7 @@ impl Pull {
 
 impl From<zmq::Socket> for Pull {
     fn from(socket: zmq::Socket) -> Self {
-        Self(Reciever {
+        Self(Receiver {
             socket: ZmqSocket::from(socket),
         })
     }
