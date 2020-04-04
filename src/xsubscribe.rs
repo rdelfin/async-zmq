@@ -32,16 +32,16 @@
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
-use zmq::{Error, SocketType};
+use zmq::SocketType;
 
 use crate::{
     reactor::{AsRawSocket, ZmqSocket},
     socket::{MessageBuf, Receiver, SocketBuilder},
-    Stream,
+    RecvError, SocketError, Stream, SubscribeError,
 };
 
 /// Create a ZMQ socket with XSUB type
-pub fn xsubscribe(endpoint: &str) -> Result<SocketBuilder<'_, XSubscribe>, zmq::Error> {
+pub fn xsubscribe(endpoint: &str) -> Result<SocketBuilder<'_, XSubscribe>, SocketError> {
     Ok(SocketBuilder::new(SocketType::XSUB, endpoint))
 }
 
@@ -57,22 +57,24 @@ impl From<zmq::Socket> for XSubscribe {
 }
 
 impl Stream for XSubscribe {
-    type Item = Result<MessageBuf, Error>;
+    type Item = Result<MessageBuf, RecvError>;
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-        Pin::new(&mut self.get_mut().0).poll_next(cx)
+        Pin::new(&mut self.get_mut().0)
+            .poll_next(cx)
+            .map(|poll| poll.map(|result| result.map_err(Into::into)))
     }
 }
 
 impl XSubscribe {
     /// Subscribe a topic to the socket
-    pub fn set_subscribe(&self, topic: &str) -> Result<(), zmq::Error> {
-        self.as_raw_socket().set_subscribe(topic.as_bytes())
+    pub fn set_subscribe(&self, topic: &str) -> Result<(), SubscribeError> {
+        Ok(self.as_raw_socket().set_subscribe(topic.as_bytes())?)
     }
 
     /// Remove a topic from the socket
-    pub fn set_unsubscribe(&self, topic: &str) -> Result<(), zmq::Error> {
-        self.as_raw_socket().set_unsubscribe(topic.as_bytes())
+    pub fn set_unsubscribe(&self, topic: &str) -> Result<(), SubscribeError> {
+        Ok(self.as_raw_socket().set_unsubscribe(topic.as_bytes())?)
     }
 
     /// Represent as `Socket` from zmq crate in case you want to call its methods.

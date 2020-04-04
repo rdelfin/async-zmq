@@ -1,4 +1,4 @@
-use async_zmq::{xpublish, subscribe, Result, StreamExt, Context};
+use async_zmq::{subscribe, xpublish, Context, Result, StreamExt};
 
 #[async_std::test]
 async fn xpublish_subscribe() -> Result<()> {

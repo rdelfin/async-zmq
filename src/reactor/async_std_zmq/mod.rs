@@ -23,7 +23,11 @@ impl ZmqSocket {
         }
     }
 
-    pub(crate) fn send(&self, cx: &mut Context<'_>, buffer: &mut MessageBuf) -> Poll<Result<(), Error>> {
+    pub(crate) fn send(
+        &self,
+        cx: &mut Context<'_>,
+        buffer: &mut MessageBuf,
+    ) -> Poll<Result<(), Error>> {
         ready!(self.poll_write_ready(cx));
         ready!(self.poll_event(zmq::POLLOUT))?;
 

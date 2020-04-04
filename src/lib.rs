@@ -36,12 +36,7 @@
 //! Prelude module provides some common types, traits and their methods. This crate also re-export
 //! so it can be easier for you to import them.
 //!
-//! Another common issue when people adopting a library is to deal with its error handling flow.
-//! To prevent introducing more overhead, `async_zmq` uses the exact same [`Result`]/[`Error`] type
-//! in [`zmq`] crate and re-export them.
-//!
 //! [`Result`]: prelude/type.Result.html
-//! [`Error`]: prelude/type.Error.html
 //! [`zmq`]: https://crates.io/crates/zmq
 //! [`async-std`]: https://crates.io/crates/async-std
 
@@ -49,6 +44,7 @@
 #![warn(missing_docs, rust_2018_idioms, unreachable_pub)]
 
 pub mod dealer;
+pub mod errors;
 pub mod pair;
 pub mod publish;
 pub mod pull;
@@ -67,10 +63,12 @@ mod socket;
 /// The prelude re-exports most commonly used traits and macros from this crate.
 pub mod prelude {
     pub use crate::dealer::{dealer, Dealer};
+    pub use crate::errors::*;
     pub use crate::pair::{pair, Pair};
     pub use crate::publish::{publish, Publish};
     pub use crate::pull::{pull, Pull};
     pub use crate::push::{push, Push};
+    pub use crate::reactor::AsRawSocket;
     pub use crate::reply::{reply, Reply};
     pub use crate::request::{request, Request};
     pub use crate::socket::{MessageBuf, SocketBuilder};
@@ -80,8 +78,7 @@ pub mod prelude {
     pub use crate::xsubscribe::{xsubscribe, XSubscribe};
     pub use futures::sink::{Sink, SinkExt};
     pub use futures::stream::{Stream, StreamExt};
-    pub use zmq::{self, Error, Message, Result, Context};
-    pub use crate::reactor::AsRawSocket;
+    pub use zmq::{self, Context, Error, Message, Result};
 }
 
 pub use prelude::*;

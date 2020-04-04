@@ -28,16 +28,16 @@
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
-use zmq::{Error, SocketType};
+use zmq::SocketType;
 
 use crate::{
     reactor::{AsRawSocket, ZmqSocket},
     socket::{MessageBuf, Receiver, SocketBuilder},
-    Stream,
+    RecvError, SocketError, Stream,
 };
 
 /// Create a ZMQ socket with PULL type
-pub fn pull(endpoint: &str) -> Result<SocketBuilder<'_, Pull>, zmq::Error> {
+pub fn pull(endpoint: &str) -> Result<SocketBuilder<'_, Pull>, SocketError> {
     Ok(SocketBuilder::new(SocketType::PULL, endpoint))
 }
 
@@ -60,9 +60,11 @@ impl From<zmq::Socket> for Pull {
 }
 
 impl Stream for Pull {
-    type Item = Result<MessageBuf, Error>;
+    type Item = Result<MessageBuf, RecvError>;
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-        Pin::new(&mut self.get_mut().0).poll_next(cx)
+        Pin::new(&mut self.get_mut().0)
+            .poll_next(cx)
+            .map(|poll| poll.map(|result| result.map_err(Into::into)))
     }
 }
