@@ -140,11 +140,11 @@ impl<T: Into<MessageBuf>> Sink<T> for Sender {
     }
 }
 
-pub(crate) struct Reciever {
+pub(crate) struct Receiver {
     pub(crate) socket: ZmqSocket,
 }
 
-impl Stream for Reciever {
+impl Stream for Receiver {
     type Item = Result<MessageBuf, Error>;
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {

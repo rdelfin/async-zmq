@@ -36,7 +36,7 @@ use zmq::{Error, SocketType};
 
 use crate::{
     reactor::{AsRawSocket, ZmqSocket},
-    socket::{MessageBuf, Reciever, SocketBuilder},
+    socket::{MessageBuf, Receiver, SocketBuilder},
     Stream,
 };
 
@@ -46,11 +46,11 @@ pub fn xsubscribe(endpoint: &str) -> Result<SocketBuilder<'_, XSubscribe>, zmq::
 }
 
 /// The async wrapper of ZMQ socket with XSUB type
-pub struct XSubscribe(Reciever);
+pub struct XSubscribe(Receiver);
 
 impl From<zmq::Socket> for XSubscribe {
     fn from(socket: zmq::Socket) -> Self {
-        Self(Reciever {
+        Self(Receiver {
             socket: ZmqSocket::from(socket),
         })
     }
