@@ -4,21 +4,6 @@
 //! [`async-std`], but it should also work on any other async reactor. The goal for this project
 //! is providing simple interface that is compatible with any async executor and reactor.
 //!
-//! ## TODO list
-//!
-//! - [ ] PAIR
-//! - [x] PUB
-//! - [x] SUB
-//! - [ ] REQ
-//! - [ ] REP
-//! - [ ] DEALER
-//! - [ ] ROUTER
-//! - [ ] PULL
-//! - [ ] PUSH
-//! - [ ] XPUB
-//! - [ ] XSUB
-//! - [ ] STREAM
-//!
 //! ## Usage
 //!
 //! Users could simply initialize any socket type with `async_zmq::*` in mind, and then call
@@ -27,6 +12,14 @@
 //!
 //! ```ignore
 //! let zmq = async_zmq::publish("tcp://127.0.0.1:5555")?.bind();
+//! ```
+//! 
+//! If there's context need to be shared between different socket, we can set it during building the socket:
+//!
+//! ```ignore
+//! let context = Context::new();
+//! let xpub = async_zmq::xpublish("inproc://example")?.with_context(&context).bind();
+//! let sub = subscribe("inproc://example")?.with_context(&context).connect()?;
 //! ```
 //!
 //! To learn more about each socket type usage. See [modules](#modules) below.

@@ -37,6 +37,14 @@ then he could initialize the socket like this:
 let zmq = async_zmq::publish("tcp://127.0.0.1:5555")?.bind();
 ```
 
+If there's context need to be shared between different socket, we can set it during building the socket:
+
+```
+let context = Context::new();
+let xpub = async_zmq::xpublish("inproc://example")?.with_context(&context).bind();
+let sub = subscribe("inproc://example")?.with_context(&context).connect()?;
+```
+
 To learn more about each socket type usage. See [modules](#modules) below.
 
 ### Prelude
