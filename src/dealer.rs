@@ -1,13 +1,18 @@
 //! DEALER socket module of Request-reply pattern in ZMQ
 //!
-//! Use [`dealer`] function to instantiate a dealerer and the you will be able to use methods from
-//! both [`Sink`]/[`SinkExt`] and [`Stream`]/[`StreamExt`] traits.
+//! Use the [`dealer`] function to instantiate a dealer socket and use methods
+//! from the [`Sink`]/[`SinkExt`] and [`Stream`]/[`StreamExt`] traits.
+//!
+//! A dealer socket must be paired with a [`router`], [`reply`] or another
+//! dealer socket.
 //!
 //! # Example
 //!
 //! ```no_run
 //! ```
 //!
+//! [`router`]: ../router/index.html
+//! [`reply`]: ../reply/index.html
 //! [`dealer`]: fn.dealer.html
 //! [`Sink`]: ../prelude/trait.Sink.html
 //! [`SinkExt`]: ../prelude/trait.SinkExt.html

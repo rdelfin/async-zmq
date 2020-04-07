@@ -1,6 +1,9 @@
 //! REP socket module of Request-reply pattern in ZMQ
 //!
-//! Use [`reply`] function to instantiate a REP socket.
+//! Use the [`reply`] function to instantiate a reply socket and use methods from
+//! the [`Stream`]/[`StreamExt`] traits.
+//!
+//! A reply socket must be paired with a [`request`] or [`dealer`] socket.
 //!
 //! # Example
 //!
@@ -17,6 +20,8 @@
 //! }
 //! ```
 //!
+//! [`dealer`]: ../dealer/index.html
+//! [`request`]: ../request/index.html
 //! [`reply`]: fn.reply.html
 
 use std::{

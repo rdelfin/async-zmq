@@ -1,6 +1,9 @@
 //! XSUB socket module of Pub-Sub pattern in ZMQ
 //!
-//! Use [`xsubscribe`] function to instantiate a XSUB socket and the you will be able to use methods from [`Stream`]/[`StreamExt`] trait.
+//! Use the [`xsubscribe`] function to instantiate an xsubscribe socket and use
+//! methods from the [`Stream`]/[`StreamExt`] trait.
+//!
+//! An xsubscribe socket must be paired with a [`publish`] or [`xpublish`] socket.
 //!
 //! # Example
 //!
@@ -25,6 +28,8 @@
 //! }
 //! ```
 //!
+//! [`xpublish`]: ../xpublish/index.html
+//! [`publish`]: ../publish/index.html
 //! [`xsubscribe`]: fn.xsubscribe.html
 //! [`Stream`]: ../prelude/trait.Stream.html
 //! [`StreamExt`]: ../prelude/trait.StreamExt.html

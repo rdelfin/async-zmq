@@ -1,6 +1,9 @@
 //! PUSH socket module of Pipeline pattern in ZMQ
 //!
-//! Use [`push`] function to instantiate a PUSH socket and the you will be able to use methods from [`Sink`]/[`SinkExt`] trait.
+//! Use the [`push`] function to instantiate a push socket and use methods from
+//! the [`Sink`]/[`SinkExt`] traits.
+//!
+//! A push socket must be paired with a [`pull`] socket.
 //!
 //! # Example
 //!
@@ -16,6 +19,7 @@
 //! }
 //! ```
 //!
+//! [`pull`]: ../pull/index.html
 //! [`push`]: fn.push.html
 //! [`Sink`]: ../prelude/trait.Sink.html
 //! [`SinkExt`]: ../prelude/trait.SinkExt.html

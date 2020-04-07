@@ -19,7 +19,7 @@ struct Entry {
     /// Tasks that are blocked on reading from this I/O handle.
     readers: Mutex<Readers>,
 
-    /// Thasks that are blocked on writing to this I/O handle.
+    /// Tasks that are blocked on writing to this I/O handle.
     writers: Mutex<Writers>,
 }
 
@@ -222,7 +222,7 @@ impl<T: Evented> Watcher<T> {
     /// Polls the inner I/O source for a non-blocking read operation.
     ///
     /// If the operation returns an error of the `io::ErrorKind::WouldBlock` kind, the current task
-    /// will be registered for wakeup when the I/O source becomes readable.
+    /// will be registered for wake-up when the I/O source becomes readable.
     pub(crate) fn poll_read_with<'a, F, R>(
         &'a self,
         cx: &mut Context<'_>,
@@ -259,7 +259,7 @@ impl<T: Evented> Watcher<T> {
     /// Polls the inner I/O source for a non-blocking write operation.
     ///
     /// If the operation returns an error of the `io::ErrorKind::WouldBlock` kind, the current task
-    /// will be registered for wakeup when the I/O source becomes writable.
+    /// will be registered for wake-up when the I/O source becomes writable.
     pub(crate) fn poll_write_with<'a, F, R>(
         &'a self,
         cx: &mut Context<'_>,
