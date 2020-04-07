@@ -1,7 +1,9 @@
 //! PAIR socket module of Exclusive pair pattern in ZMQ
 //!
-//! Use [`pair`] function to instantiate a pair socket and the you will be able to use methods from
-//! both [`Sink`]/[`SinkExt`] and [`Stream`]/[`StreamExt`] traits.
+//! Use the [`pair`] function to instantiate a pair socket and use methods from
+//! the [`Sink`]/[`SinkExt`] and [`Stream`]/[`StreamExt`] traits.
+//!
+//! A pair socket must be paired with another pair socket.
 //!
 //! # Example
 //!

@@ -1,7 +1,9 @@
 //! XPUB socket module of Pub-Sub pattern in ZMQ
 //!
-//! Use [`xpublish`] function to instantiate a XPUB socket and the you will be able to use methods from
-//! both [`Sink`]/[`SinkExt`] and [`Stream`]/[`StreamExt`] traits.
+//! Use the [`xpublish`] function to instantiate an xpublish socket and use
+//! methods from the [`Sink`]/[`SinkExt`] and [`Stream`]/[`StreamExt`] traits.
+//!
+//! An xpublish socket must be paired with a [`subscribe`] or [`xsubscribe`] socket.
 //!
 //! # Example
 //!
@@ -18,6 +20,8 @@
 //! ```
 //!
 //! [`xpublish`]: fn.xpublish.html
+//! [`xsubscribe`]: ../xsubscribe/index.html
+//! [`subscribe`]: ../subscribe/index.html
 //! [`Sink`]: ../prelude/trait.Sink.html
 //! [`SinkExt`]: ../prelude/trait.SinkExt.html
 //! [`Stream`]: ../prelude/trait.Stream.html

@@ -10,7 +10,7 @@ use zmq::Error;
 /// Alias type for Message queue.
 ///
 /// This is a [`VecDeque`] to easier popping front [`Message`](struct.Message.html).
-/// Users are free to use any type to queue their message as long as it satisfied trait boud [`Into<MessageBuf>`].
+/// Users are free to use any type to queue their message as long as it satisfies the trait bound [`Into<MessageBuf>`].
 ///
 /// [`VecDeque`]: https://doc.rust-lang.org/std/collections/struct.VecDeque.html
 /// [`Into<MessageBuf>`]: https://doc.rust-lang.org/std/convert/trait.Into.html

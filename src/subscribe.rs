@@ -1,6 +1,9 @@
 //! SUB socket module of Pub-Sub pattern in ZMQ
 //!
-//! Use [`subscribe`] function to instantiate a subscriber and the you will be able to use methods from [`Stream`]/[`StreamExt`] trait.
+//! Use the [`subscribe`] function to instantiate a subscribe socket and use
+//! methods from the [`Stream`]/[`StreamExt`] traits.
+//!
+//! A subscribe socket must be paired with a [`publish`] or [`xpublish`] socket.
 //!
 //! # Example
 //!
@@ -25,6 +28,8 @@
 //! }
 //! ```
 //!
+//! [`xpublish`]: ../xpublish/index.html
+//! [`publish`]: ../publish/index.html
 //! [`subscribe`]: fn.subscribe.html
 //! [`Stream`]: ../prelude/trait.Stream.html
 //! [`StreamExt`]: ../prelude/trait.StreamExt.html

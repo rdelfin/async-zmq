@@ -1,13 +1,18 @@
 //! ROUTER socket module of Request-reply pattern in ZMQ
 //!
-//! Use [`router`] function to instantiate a routerer and the you will be able to use methods from
-//! both [`Sink`]/[`SinkExt`] and [`Stream`]/[`StreamExt`] traits.
+//! Use the [`router`] function to instantiate a router socket and use methods
+//! from the [`Sink`]/[`SinkExt`] and [`Stream`]/[`StreamExt`] traits.
+//!
+//! A router socket must be paired with a [`dealer`], [`request`] or another
+//! router socket.
 //!
 //! # Example
 //!
 //! ```no_run
 //! ```
 //!
+//! [`dealer`]: ../dealer/index.html
+//! [`request`]: ../request/index.html
 //! [`router`]: fn.router.html
 //! [`Sink`]: ../prelude/trait.Sink.html
 //! [`SinkExt`]: ../prelude/trait.SinkExt.html

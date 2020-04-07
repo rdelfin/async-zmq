@@ -1,6 +1,8 @@
-//! REQ socket module of Request-request pattern in ZMQ
+//! REQ socket module of Request-reply pattern in ZMQ
 //!
-//! Use [`request`] function to instantiate a REQ socket.
+//! Use the [`request`] function to instantiate a request socket.
+//!
+//! A request socket must be paired with a [`reply`] or [`router`] socket.
 //!
 //! # Example
 //!
@@ -17,6 +19,8 @@
 //! }
 //! ```
 //!
+//! [`reply`]: ../reply/index.html
+//! [`router`]: ../router/index.html
 //! [`request`]: fn.request.html
 
 use crate::{

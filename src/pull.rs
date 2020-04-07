@@ -1,6 +1,9 @@
 //! PULL socket module of Pipeline  pattern in ZMQ
 //!
-//! Use [`pull`] function to instantiate a PULL socket and the you will be able to use methods from [`Stream`]/[`StreamExt`] trait.
+//! Use the [`pull`] function to instantiate a pull socket and use methods from
+//! the [`Stream`]/[`StreamExt`] traits.
+//!
+//! A pull socket must be paired with a [`push`] socket.
 //!
 //! # Example
 //!
@@ -21,6 +24,7 @@
 //! }
 //! ```
 //!
+//! [`push`]: ../push/index.html
 //! [`pull`]: fn.pull.html
 //! [`Stream`]: ../prelude/trait.Stream.html
 //! [`StreamExt`]: ../prelude/trait.StreamExt.html

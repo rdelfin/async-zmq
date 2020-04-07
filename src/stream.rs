@@ -1,6 +1,10 @@
 //! STREAM socket module of Pub-Sub pattern in ZMQ
 //!
-//! Use [`stream`] function to instantiate a stream socket and the you will be able to use methods from [`Stream`]/[`StreamExt`] trait.
+//! Use the [`stream`] function to instantiate a stream socket and use methods
+//! from the [`Stream`]/[`StreamExt`] traits.
+//!
+//! A stream socket is for interacting with TCP data from sources other than
+//! ZMQ. It is not compatible with any of the other ZMQ socket types.
 //!
 //! # Example
 //!

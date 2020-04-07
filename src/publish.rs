@@ -1,6 +1,9 @@
 //! PUB socket module of Pub-Sub pattern in ZMQ
 //!
-//! Use [`publish`] function to instantiate a publisher and the you will be able to use methods from [`Sink`]/[`SinkExt`] trait.
+//! Use the [`publish`] function to instantiate a publish socket and use methods
+//! from the [`Sink`]/[`SinkExt`] traits.
+//!
+//! A publish socket must be paired with a [`subscribe`] or [`xsubscribe`] socket.
 //!
 //! # Example
 //!
@@ -16,6 +19,8 @@
 //! }
 //! ```
 //!
+//! [`subscribe`]: ../subscribe/index.html
+//! [`xsubscribe`]: ../xsubscribe/index.html
 //! [`publish`]: fn.publish.html
 //! [`Sink`]: ../prelude/trait.Sink.html
 //! [`SinkExt`]: ../prelude/trait.SinkExt.html
