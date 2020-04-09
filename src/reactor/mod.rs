@@ -22,7 +22,7 @@ impl ZmqSocket {
         if self.as_socket().get_events()?.contains(event) {
             Poll::Ready(Ok(()))
         } else {
-            Poll::Ready(Err(Error::EAGAIN))
+            Poll::Pending
         }
     }
 
