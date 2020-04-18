@@ -11,22 +11,6 @@ This is high-level bindings for [`zmq`] in asynchronous manner. Crate itself use
 [`async-std`], but it should also work on any other async reactor. The goal for this project
 is providing simple interface that is compatible with any async executor and reactor.
 
-## TODO list
-
-- [X] PAIR
-- [x] PUB
-- [x] SUB
-- [x] REQ
-- [x] REP
-- [x] DEALER
-- [x] ROUTER
-- [x] PULL
-- [x] PUSH
-- [x] XPUB
-- [x] XSUB
-- [x] STREAM
-- [ ] More tests
-
 ## Usage
 
 Users could simply initialize any socket type with `async_zmq::*` in mind, and then call
@@ -44,6 +28,10 @@ let context = Context::new();
 let xpub = async_zmq::xpublish("inproc://example")?.with_context(&context).bind();
 let sub = subscribe("inproc://example")?.with_context(&context).connect()?;
 ```
+
+Since the use case of this crate is mostly for sending/recieving multipart message. So it provides [`Multipart`]
+which is a type alias for `Vec<Message>` when recieving message on type implemented with `Stream`, and [`MultipartIter`]
+which is a generic struct make any queue can turn into iterator and then send via type  implemented with `Sink`.
 
 To learn more about each socket type usage. See [modules](#modules) below.
 

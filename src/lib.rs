@@ -21,12 +21,19 @@
 //! let xpub = async_zmq::xpublish("inproc://example")?.with_context(&context).bind();
 //! let sub = subscribe("inproc://example")?.with_context(&context).connect()?;
 //! ```
+//! 
+//! Since the use case of this crate is mostly for sending/recieving multipart message. So it provides [`Multipart`]
+//! which is a type alias for `Vec<Message>` when recieving message on type implemented with `Stream`, and [`MultipartIter`]
+//! which is a generic struct make any queue can turn into iterator and then send via type  implemented with `Sink`.
 //!
 //! To learn more about each socket type usage. See [modules](#modules) below.
 //!
 //! [`Result`]: type.Result.html
 //! [`zmq`]: https://crates.io/crates/zmq
 //! [`async-std`]: https://crates.io/crates/async-std
+//! [`Multipart`]: type.Multipart.html
+//! [`MultipartIter`]: struct.MultipartIter.html
+
 
 #![deny(unused_extern_crates, unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms, unreachable_pub)]
