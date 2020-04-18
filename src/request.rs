@@ -25,40 +25,40 @@
 
 use crate::{
     reactor::{AsRawSocket, ZmqSocket},
-    socket::{MessageBuf, Sender, SocketBuilder},
+    socket::{Multipart, MultipartIter, Sender, SocketBuilder},
     RequestReplyError, SocketError,
 };
 use futures::future::poll_fn;
 use std::sync::atomic::{AtomicBool, Ordering};
-use zmq::SocketType;
+use zmq::{SocketType, Message};
 
 /// Create a ZMQ socket with REQ type
-pub fn request(endpoint: &str) -> Result<SocketBuilder<'_, Request>, SocketError> {
+pub fn request<I: Iterator<Item=T> + Unpin, T: Into<Message>>(endpoint: &str) -> Result<SocketBuilder<'_, Request<I, T>>, SocketError> {
     Ok(SocketBuilder::new(SocketType::REQ, endpoint))
 }
 
 /// The async wrapper of ZMQ socket with REQ type
-pub struct Request {
-    inner: Sender,
+pub struct Request<I: Iterator<Item=T> + Unpin, T: Into<Message>> {
+    inner: Sender<I, T>,
     received: AtomicBool,
 }
 
-impl From<zmq::Socket> for Request {
+impl<I: Iterator<Item=T> + Unpin, T: Into<Message>> From<zmq::Socket> for Request<I, T> {
     fn from(socket: zmq::Socket) -> Self {
         Self {
             inner: Sender {
                 socket: ZmqSocket::from(socket),
-                buffer: MessageBuf::default(),
+                buffer: None,
             },
             received: AtomicBool::new(false),
         }
     }
 }
 
-impl Request {
+impl<I: Iterator<Item=T> + Unpin, T: Into<Message>> Request<I, T> {
     /// Send request to REP/ROUTER socket. This should be the first method to be called, and then
     /// continue with send/receive pattern in synchronous way.
-    pub async fn send<T: Into<MessageBuf>>(&self, msg: T) -> Result<(), RequestReplyError> {
+    pub async fn send<S: Into<MultipartIter<I, T>>>(&self, msg: S) -> Result<(), RequestReplyError> {
         let mut msg = msg.into();
         let res = poll_fn(move |cx| self.inner.socket.send(cx, &mut msg)).await?;
         self.received.store(false, Ordering::Relaxed);
@@ -66,7 +66,7 @@ impl Request {
     }
 
     /// Receive reply from REP/ROUTER socket. [`send`](#method.send) must be called first in order to receive reply.
-    pub async fn recv(&self) -> Result<MessageBuf, RequestReplyError> {
+    pub async fn recv(&self) -> Result<Multipart, RequestReplyError> {
         let msg = poll_fn(|cx| self.inner.socket.recv(cx)).await?;
         self.received.store(true, Ordering::Relaxed);
         Ok(msg)

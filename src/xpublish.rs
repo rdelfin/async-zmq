@@ -14,7 +14,7 @@
 //! async fn main() -> Result<()> {
 //!     let mut zmq = async_zmq::xpublish("tcp://127.0.0.1:5555")?.bind()?;
 //!
-//!     zmq.send(vec!["topic", "broadcast message"]).await?;
+//!     zmq.send(vec!["topic", "broadcast message"].into()).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -32,53 +32,53 @@ use std::task::{Context, Poll};
 
 use crate::{
     reactor::{AsRawSocket, ZmqSocket},
-    socket::{Broker, MessageBuf, SocketBuilder},
+    socket::{Broker, Multipart, MultipartIter, SocketBuilder},
     SendError, Sink, SocketError, Stream,
 };
-use zmq::SocketType;
+use zmq::{SocketType, Message};
 
 /// Create a ZMQ socket with XPUB type
-pub fn xpublish(endpoint: &str) -> Result<SocketBuilder<'_, XPublish>, SocketError> {
+pub fn xpublish<I: Iterator<Item=T> + Unpin, T: Into<Message>>(endpoint: &str) -> Result<SocketBuilder<'_, XPublish<I, T>>, SocketError> {
     Ok(SocketBuilder::new(SocketType::XPUB, endpoint))
 }
 
 /// The async wrapper of ZMQ socket with XPUB type
-pub struct XPublish(Broker);
+pub struct XPublish<I: Iterator<Item=T> + Unpin, T: Into<Message>>(Broker<I, T>);
 
-impl XPublish {
+impl<I: Iterator<Item=T> + Unpin, T: Into<Message>> XPublish<I, T> {
     /// Represent as `Socket` from zmq crate in case you want to call its methods.
     pub fn as_raw_socket(&self) -> &zmq::Socket {
         &self.0.socket.as_socket()
     }
 }
 
-impl<T: Into<MessageBuf>> Sink<T> for XPublish {
+impl<I: Iterator<Item=T> + Unpin, T: Into<Message>> Sink<MultipartIter<I,T>> for XPublish<I, T> {
     type Error = SendError;
 
     fn poll_ready(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        Sink::<T>::poll_ready(Pin::new(&mut self.get_mut().0), cx)
+        Sink::poll_ready(Pin::new(&mut self.get_mut().0), cx)
             .map(|result| result.map_err(Into::into))
     }
 
-    fn start_send(self: Pin<&mut Self>, item: T) -> Result<(), Self::Error> {
+    fn start_send(self: Pin<&mut Self>, item: MultipartIter<I,T>) -> Result<(), Self::Error> {
         Pin::new(&mut self.get_mut().0)
             .start_send(item)
             .map_err(Into::into)
     }
 
     fn poll_flush(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        Sink::<T>::poll_flush(Pin::new(&mut self.get_mut().0), cx)
+        Sink::poll_flush(Pin::new(&mut self.get_mut().0), cx)
             .map(|result| result.map_err(Into::into))
     }
 
     fn poll_close(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        Sink::<T>::poll_close(Pin::new(&mut self.get_mut().0), cx)
+        Sink::poll_close(Pin::new(&mut self.get_mut().0), cx)
             .map(|result| result.map_err(Into::into))
     }
 }
 
-impl Stream for XPublish {
-    type Item = Result<MessageBuf, SendError>;
+impl<I: Iterator<Item=T> + Unpin, T: Into<Message>> Stream for XPublish<I, T> {
+    type Item = Result<Multipart, SendError>;
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         Pin::new(&mut self.get_mut().0)
@@ -87,11 +87,11 @@ impl Stream for XPublish {
     }
 }
 
-impl From<zmq::Socket> for XPublish {
+impl<I: Iterator<Item=T> + Unpin, T: Into<Message>> From<zmq::Socket> for XPublish<I, T> {
     fn from(socket: zmq::Socket) -> Self {
         Self(Broker {
             socket: ZmqSocket::from(socket),
-            buffer: MessageBuf::default(),
+            buffer: None,
         })
     }
 }

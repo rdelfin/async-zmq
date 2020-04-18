@@ -1,7 +1,7 @@
 use async_std::sync::{Arc, Mutex};
 use async_std::task::spawn;
 
-use async_zmq::{publish, subscribe, MessageBuf, Result, SinkExt, StreamExt};
+use async_zmq::{publish, subscribe, Multipart, Result, SinkExt, StreamExt};
 
 #[async_std::test]
 async fn publish_subscribe_message() -> Result<()> {
@@ -17,7 +17,7 @@ async fn publish_subscribe_message() -> Result<()> {
 
     let send_handle = spawn(async move {
         while *running.lock().await {
-            let _ = publish.send(message.clone()).await;
+            let _ = publish.send(message.clone().into()).await;
         }
     });
 
@@ -26,7 +26,7 @@ async fn publish_subscribe_message() -> Result<()> {
             if let Ok(recv) = recv {
                 assert_eq!(
                     recv,
-                    expected.iter().map(|i| i.into()).collect::<MessageBuf>()
+                    expected.iter().map(|i| i.into()).collect::<Multipart>()
                 );
                 *notify.lock().await = false;
                 break;

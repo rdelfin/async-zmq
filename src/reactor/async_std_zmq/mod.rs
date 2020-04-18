@@ -5,7 +5,7 @@ pub(crate) use watcher::Watcher;
 
 use crate::{
     reactor::{evented, AsRawSocket},
-    socket::MessageBuf,
+    socket::{MultipartIter, Multipart},
 };
 
 use futures::ready;
@@ -23,17 +23,18 @@ impl ZmqSocket {
         }
     }
 
-    pub(crate) fn send(
+    pub(crate) fn send<I: Iterator<Item=T>, T: Into<zmq::Message>>(
         &self,
         cx: &mut Context<'_>,
-        buffer: &mut MessageBuf,
+        buffer: &mut MultipartIter<I, T>,
     ) -> Poll<Result<(), Error>> {
         ready!(self.poll_write_ready(cx));
         ready!(self.poll_event(zmq::POLLOUT))?;
-
-        while let Some(msg) = buffer.pop_front() {
-            let mut flags = zmq::DONTWAIT;
-            if !buffer.is_empty() {
+        
+        let mut buffer = buffer.0.by_ref().peekable();
+        while let Some(msg) = buffer.next() {
+            let mut flags = zmq::DONTWAIT ;
+            if let Some(_) = buffer.peek() {
                 flags |= zmq::SNDMORE;
             }
 
@@ -47,11 +48,11 @@ impl ZmqSocket {
         Poll::Ready(Ok(()))
     }
 
-    pub(crate) fn recv(&self, cx: &mut Context<'_>) -> Poll<Result<MessageBuf, Error>> {
+    pub(crate) fn recv(&self, cx: &mut Context<'_>) -> Poll<Result<Multipart, Error>> {
         ready!(self.poll_read_ready(cx));
         ready!(self.poll_event(zmq::POLLIN))?;
 
-        let mut buffer = MessageBuf::default();
+        let mut buffer = Vec::new();
         let mut more = true;
 
         while more {
@@ -59,7 +60,7 @@ impl ZmqSocket {
             match self.as_socket().recv(&mut msg, zmq::DONTWAIT) {
                 Ok(_) => {
                     more = msg.get_more();
-                    buffer.0.push_back(msg);
+                    buffer.push(msg);
                 }
                 Err(e) => return Poll::Ready(Err(e.into())),
             }

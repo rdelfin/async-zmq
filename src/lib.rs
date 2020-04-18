@@ -64,7 +64,8 @@ pub mod prelude {
     pub use crate::reactor::AsRawSocket;
     pub use crate::reply::{reply, Reply};
     pub use crate::request::{request, Request};
-    pub use crate::socket::{MessageBuf, SocketBuilder};
+    pub use crate::router::{router, Router};
+    pub use crate::socket::{MultipartIter, Multipart, SocketBuilder};
     pub use crate::stream::{stream, ZmqStream};
     pub use crate::subscribe::{subscribe, Subscribe};
     pub use crate::xpublish::{xpublish, XPublish};

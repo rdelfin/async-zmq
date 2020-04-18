@@ -30,50 +30,50 @@ use std::{
     task::{Context, Poll},
 };
 
-use zmq::SocketType;
+use zmq::{SocketType, Message};
 
 use crate::{
     reactor::{AsRawSocket, ZmqSocket},
-    socket::{MessageBuf, Sender, SocketBuilder},
+    socket::{Multipart, MultipartIter, Sender, SocketBuilder},
     RecvError, RequestReplyError, SocketError,
 };
 
 use futures::{future::poll_fn, Stream};
 
 /// Create a ZMQ socket with REP type
-pub fn reply(endpoint: &str) -> Result<SocketBuilder<'_, Reply>, SocketError> {
+pub fn reply<I: Iterator<Item=T> + Unpin, T: Into<Message>>(endpoint: &str) -> Result<SocketBuilder<'_, Reply<I, T>>, SocketError> {
     Ok(SocketBuilder::new(SocketType::REP, endpoint))
 }
 
 /// The async wrapper of ZMQ socket with REP type
-pub struct Reply {
-    inner: Sender,
+pub struct Reply<I: Iterator<Item=T> + Unpin, T: Into<Message>> {
+    inner: Sender<I, T>,
     received: AtomicBool,
 }
 
-impl From<zmq::Socket> for Reply {
+impl<I: Iterator<Item=T> + Unpin, T: Into<Message>> From<zmq::Socket> for Reply<I, T> {
     fn from(socket: zmq::Socket) -> Self {
         Self {
             inner: Sender {
                 socket: ZmqSocket::from(socket),
-                buffer: MessageBuf::default(),
+                buffer: None,
             },
             received: AtomicBool::new(false),
         }
     }
 }
 
-impl Reply {
+impl<I: Iterator<Item=T> + Unpin, T: Into<Message>> Reply<I, T> {
     /// Receive request from REQ/DEALER socket. This should be the first method to be called, and then
     /// continue with receive/send pattern in synchronous way.
-    pub async fn recv(&self) -> Result<MessageBuf, RequestReplyError> {
+    pub async fn recv(&self) -> Result<Multipart, RequestReplyError> {
         let msg = poll_fn(|cx| self.inner.socket.recv(cx)).await?;
         self.received.store(true, Ordering::Relaxed);
         Ok(msg)
     }
 
     /// Send reply to REQ/DEALER socket. [`recv`](#method.recv) must be called first in order to reply.
-    pub async fn send<T: Into<MessageBuf>>(&self, msg: T) -> Result<(), RequestReplyError> {
+    pub async fn send<S: Into<MultipartIter<I, T>>>(&self, msg: S) -> Result<(), RequestReplyError> {
         let mut msg = msg.into();
         let res = poll_fn(move |cx| self.inner.socket.send(cx, &mut msg)).await?;
         self.received.store(false, Ordering::Relaxed);
@@ -86,8 +86,8 @@ impl Reply {
     }
 }
 
-impl Stream for Reply {
-    type Item = Result<MessageBuf, RecvError>;
+impl<I: Iterator<Item=T> + Unpin, T: Into<Message>> Stream for Reply<I, T> {
+    type Item = Result<Multipart, RecvError>;
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         Poll::Ready(Some(Ok(futures::ready!(self.inner.socket.recv(cx))?)))

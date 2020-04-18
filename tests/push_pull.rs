@@ -1,7 +1,7 @@
 use async_std::sync::{Arc, Mutex};
 use async_std::task::spawn;
 
-use async_zmq::{pull, push, MessageBuf, Result, SinkExt, StreamExt};
+use async_zmq::{pull, push, Multipart, Result, SinkExt, StreamExt};
 
 #[async_std::test]
 async fn push_pull_message() -> Result<()> {
@@ -15,7 +15,7 @@ async fn push_pull_message() -> Result<()> {
 
     let send_handle = spawn(async move {
         while *running.lock().await {
-            let _ = push.send(message.clone()).await;
+            let _ = push.send(message.clone().into()).await;
         }
     });
 
@@ -24,7 +24,7 @@ async fn push_pull_message() -> Result<()> {
             if let Ok(recv) = recv {
                 assert_eq!(
                     recv,
-                    expected.iter().map(|i| i.into()).collect::<MessageBuf>()
+                    expected.iter().map(|i| i.into()).collect::<Multipart>()
                 );
                 *notify.lock().await = false;
                 break;

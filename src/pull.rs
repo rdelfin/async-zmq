@@ -36,7 +36,7 @@ use zmq::SocketType;
 
 use crate::{
     reactor::{AsRawSocket, ZmqSocket},
-    socket::{MessageBuf, Receiver, SocketBuilder},
+    socket::{Multipart, Receiver, SocketBuilder},
     RecvError, SocketError, Stream,
 };
 
@@ -64,7 +64,7 @@ impl From<zmq::Socket> for Pull {
 }
 
 impl Stream for Pull {
-    type Item = Result<MessageBuf, RecvError>;
+    type Item = Result<Multipart, RecvError>;
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         Pin::new(&mut self.get_mut().0)

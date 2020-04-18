@@ -1,10 +1,11 @@
-use async_zmq::{subscribe, xpublish, Context, Result, StreamExt};
+use async_zmq::{subscribe, xpublish, Context, Result, StreamExt, Message};
+use std::vec::IntoIter;
 
 #[async_std::test]
 async fn xpublish_subscribe() -> Result<()> {
     let uri = "inproc://xpub_xsub";
     let context = Context::new();
-    let mut xpublish = xpublish(uri)?.with_context(&context).bind()?;
+    let mut xpublish = xpublish::<IntoIter<Message>, Message>(uri)?.with_context(&context).bind()?;
     let subscribe = subscribe(uri)?.with_context(&context).connect()?;
 
     let topic = "Topic";
