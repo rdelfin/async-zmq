@@ -30,20 +30,22 @@ use crate::{
 };
 use futures::future::poll_fn;
 use std::sync::atomic::{AtomicBool, Ordering};
-use zmq::{SocketType, Message};
+use zmq::{Message, SocketType};
 
 /// Create a ZMQ socket with REQ type
-pub fn request<I: Iterator<Item=T> + Unpin, T: Into<Message>>(endpoint: &str) -> Result<SocketBuilder<'_, Request<I, T>>, SocketError> {
+pub fn request<I: Iterator<Item = T> + Unpin, T: Into<Message>>(
+    endpoint: &str,
+) -> Result<SocketBuilder<'_, Request<I, T>>, SocketError> {
     Ok(SocketBuilder::new(SocketType::REQ, endpoint))
 }
 
 /// The async wrapper of ZMQ socket with REQ type
-pub struct Request<I: Iterator<Item=T> + Unpin, T: Into<Message>> {
+pub struct Request<I: Iterator<Item = T> + Unpin, T: Into<Message>> {
     inner: Sender<I, T>,
     received: AtomicBool,
 }
 
-impl<I: Iterator<Item=T> + Unpin, T: Into<Message>> From<zmq::Socket> for Request<I, T> {
+impl<I: Iterator<Item = T> + Unpin, T: Into<Message>> From<zmq::Socket> for Request<I, T> {
     fn from(socket: zmq::Socket) -> Self {
         Self {
             inner: Sender {
@@ -55,10 +57,13 @@ impl<I: Iterator<Item=T> + Unpin, T: Into<Message>> From<zmq::Socket> for Reques
     }
 }
 
-impl<I: Iterator<Item=T> + Unpin, T: Into<Message>> Request<I, T> {
+impl<I: Iterator<Item = T> + Unpin, T: Into<Message>> Request<I, T> {
     /// Send request to REP/ROUTER socket. This should be the first method to be called, and then
     /// continue with send/receive pattern in synchronous way.
-    pub async fn send<S: Into<MultipartIter<I, T>>>(&self, msg: S) -> Result<(), RequestReplyError> {
+    pub async fn send<S: Into<MultipartIter<I, T>>>(
+        &self,
+        msg: S,
+    ) -> Result<(), RequestReplyError> {
         let mut msg = msg.into();
         let res = poll_fn(move |cx| self.inner.socket.send(cx, &mut msg)).await?;
         self.received.store(false, Ordering::Relaxed);

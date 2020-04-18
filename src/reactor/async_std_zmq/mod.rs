@@ -5,7 +5,7 @@ pub(crate) use watcher::Watcher;
 
 use crate::{
     reactor::{evented, AsRawSocket},
-    socket::{MultipartIter, Multipart},
+    socket::{Multipart, MultipartIter},
 };
 
 use futures::ready;
@@ -23,17 +23,17 @@ impl ZmqSocket {
         }
     }
 
-    pub(crate) fn send<I: Iterator<Item=T>, T: Into<zmq::Message>>(
+    pub(crate) fn send<I: Iterator<Item = T>, T: Into<zmq::Message>>(
         &self,
         cx: &mut Context<'_>,
         buffer: &mut MultipartIter<I, T>,
     ) -> Poll<Result<(), Error>> {
         ready!(self.poll_write_ready(cx));
         ready!(self.poll_event(zmq::POLLOUT))?;
-        
+
         let mut buffer = buffer.0.by_ref().peekable();
         while let Some(msg) = buffer.next() {
-            let mut flags = zmq::DONTWAIT ;
+            let mut flags = zmq::DONTWAIT;
             if let Some(_) = buffer.peek() {
                 flags |= zmq::SNDMORE;
             }

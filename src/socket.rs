@@ -6,26 +6,36 @@ use crate::{reactor::ZmqSocket, Message, Sink, Stream};
 use futures::ready;
 use zmq::Error;
 
-/// Alias type for Multipart Iterator.
+/// Multipart Iterator for Sending under `Sink`.
 ///
-/// This is a slice of element with [`Into<MessageBuf>`] implemented.
+/// This is a iterator generics of Multipart which elements have trait bound of [`Into<MessageBuf>`].
+/// So as long as your type can turn into iterator and the element can turn into Message, users
+/// caen send to the zmq socket via [`Sink`] and its related traits like [`SinkExt`].
 ///
 /// [`Into<MessageBuf>`]: https://doc.rust-lang.org/std/convert/trait.Into.html
-pub struct MultipartIter<I: Iterator<Item=T>, T: Into<Message>>(pub I);
+/// [`Sink`]: trait.Sink.html
+/// [`SinkExt`]: trait.SinkExt.html
+pub struct MultipartIter<I: Iterator<Item = T>, T: Into<Message>>(pub I);
 
-impl <T: Into<Message>> From<Vec<T>> for MultipartIter<std::vec::IntoIter<T>, T> {
+impl<T: Into<Message>> From<Vec<T>> for MultipartIter<std::vec::IntoIter<T>, T> {
     fn from(vec: Vec<T>) -> Self {
         MultipartIter(vec.into_iter())
     }
 }
 
-impl <T: Into<Message>> From<T> for MultipartIter<std::vec::IntoIter<T>, T> {
+impl<T: Into<Message>> From<T> for MultipartIter<std::vec::IntoIter<T>, T> {
     fn from(m: T) -> Self {
         MultipartIter(vec![m].into_iter())
     }
 }
 
-/// Alias type for Multipart.
+/// Alias type of Multipart.
+///
+/// This is the type what we receive from zmq socket via [`Stream`]. Users can choose
+/// the type of queue they want when sending messages as long as it can turn into iterator.
+/// For more information, see [`MultipartIter`](struct.MultipartIter.html)
+///
+/// [`Stream`]: trait.Stream.html
 pub type Multipart = Vec<Message>;
 
 /// ZMQ socket builder. It lets user to either bind or connect the socket of their choice.
@@ -87,12 +97,12 @@ where
     }
 }
 
-pub(crate) struct Sender<I: Iterator<Item=T> + Unpin, T: Into<Message>> {
+pub(crate) struct Sender<I: Iterator<Item = T> + Unpin, T: Into<Message>> {
     pub(crate) socket: ZmqSocket,
     pub(crate) buffer: Option<MultipartIter<I, T>>,
 }
 
-impl<I: Iterator<Item=T> + Unpin, T: Into<Message>> Sink<MultipartIter<I, T>> for Sender<I, T> {
+impl<I: Iterator<Item = T> + Unpin, T: Into<Message>> Sink<MultipartIter<I, T>> for Sender<I, T> {
     type Error = Error;
 
     fn poll_ready(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
@@ -111,7 +121,6 @@ impl<I: Iterator<Item=T> + Unpin, T: Into<Message>> Sink<MultipartIter<I, T>> fo
         } else {
             Poll::Ready(Ok(()))
         }
-        
     }
 
     fn poll_close(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
@@ -131,12 +140,12 @@ impl Stream for Receiver {
     }
 }
 
-pub(crate) struct Broker<I: Iterator<Item=T> + Unpin, T: Into<Message>> {
+pub(crate) struct Broker<I: Iterator<Item = T> + Unpin, T: Into<Message>> {
     pub(crate) socket: ZmqSocket,
     pub(crate) buffer: Option<MultipartIter<I, T>>,
 }
 
-impl<I: Iterator<Item=T> + Unpin, T: Into<Message>> Sink<MultipartIter<I, T>> for Broker<I, T> {
+impl<I: Iterator<Item = T> + Unpin, T: Into<Message>> Sink<MultipartIter<I, T>> for Broker<I, T> {
     type Error = Error;
 
     fn poll_ready(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
@@ -149,7 +158,7 @@ impl<I: Iterator<Item=T> + Unpin, T: Into<Message>> Sink<MultipartIter<I, T>> fo
     }
 
     fn poll_flush(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        let Self { socket, buffer} = self.get_mut();
+        let Self { socket, buffer } = self.get_mut();
         if let Some(buffer) = buffer.as_mut() {
             socket.send(cx, buffer)
         } else {
@@ -162,7 +171,7 @@ impl<I: Iterator<Item=T> + Unpin, T: Into<Message>> Sink<MultipartIter<I, T>> fo
     }
 }
 
-impl<I: Iterator<Item=T> + Unpin, T: Into<Message>> Stream for Broker<I, T> {
+impl<I: Iterator<Item = T> + Unpin, T: Into<Message>> Stream for Broker<I, T> {
     type Item = Result<Multipart, Error>;
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {

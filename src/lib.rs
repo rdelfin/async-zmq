@@ -13,7 +13,7 @@
 //! ```ignore
 //! let zmq = async_zmq::publish("tcp://127.0.0.1:5555")?.bind();
 //! ```
-//! 
+//!
 //! If there's context need to be shared between different socket, we can set it during building the socket:
 //!
 //! ```ignore
@@ -24,12 +24,7 @@
 //!
 //! To learn more about each socket type usage. See [modules](#modules) below.
 //!
-//! ### Prelude
-//!
-//! Prelude module provides some common types, traits and their methods. This crate also re-export
-//! so it can be easier for you to import them.
-//!
-//! [`Result`]: prelude/type.Result.html
+//! [`Result`]: type.Result.html
 //! [`zmq`]: https://crates.io/crates/zmq
 //! [`async-std`]: https://crates.io/crates/async-std
 
@@ -53,26 +48,21 @@ pub mod xsubscribe;
 mod reactor;
 mod socket;
 
-/// The prelude re-exports most commonly used traits and macros from this crate.
-pub mod prelude {
-    pub use crate::dealer::{dealer, Dealer};
-    pub use crate::errors::*;
-    pub use crate::pair::{pair, Pair};
-    pub use crate::publish::{publish, Publish};
-    pub use crate::pull::{pull, Pull};
-    pub use crate::push::{push, Push};
-    pub use crate::reactor::AsRawSocket;
-    pub use crate::reply::{reply, Reply};
-    pub use crate::request::{request, Request};
-    pub use crate::router::{router, Router};
-    pub use crate::socket::{MultipartIter, Multipart, SocketBuilder};
-    pub use crate::stream::{stream, ZmqStream};
-    pub use crate::subscribe::{subscribe, Subscribe};
-    pub use crate::xpublish::{xpublish, XPublish};
-    pub use crate::xsubscribe::{xsubscribe, XSubscribe};
-    pub use futures::sink::{Sink, SinkExt};
-    pub use futures::stream::{Stream, StreamExt};
-    pub use zmq::{self, Context, Error, Message, Result};
-}
-
-pub use prelude::*;
+pub use crate::dealer::{dealer, Dealer};
+pub use crate::errors::*;
+pub use crate::pair::{pair, Pair};
+pub use crate::publish::{publish, Publish};
+pub use crate::pull::{pull, Pull};
+pub use crate::push::{push, Push};
+pub use crate::reactor::AsRawSocket;
+pub use crate::reply::{reply, Reply};
+pub use crate::request::{request, Request};
+pub use crate::router::{router, Router};
+pub use crate::socket::{Multipart, MultipartIter, SocketBuilder};
+pub use crate::stream::{stream, ZmqStream};
+pub use crate::subscribe::{subscribe, Subscribe};
+pub use crate::xpublish::{xpublish, XPublish};
+pub use crate::xsubscribe::{xsubscribe, XSubscribe};
+pub use futures::sink::{Sink, SinkExt};
+pub use futures::stream::{Stream, StreamExt};
+pub use zmq::{self, Context, Error, Message, Result};

@@ -14,10 +14,10 @@
 //! [`dealer`]: ../dealer/index.html
 //! [`request`]: ../request/index.html
 //! [`router`]: fn.router.html
-//! [`Sink`]: ../prelude/trait.Sink.html
-//! [`SinkExt`]: ../prelude/trait.SinkExt.html
-//! [`Stream`]: ../prelude/trait.Stream.html
-//! [`StreamExt`]: ../prelude/trait.StreamExt.html
+//! [`Sink`]: ../trait.Sink.html
+//! [`SinkExt`]: ../trait.SinkExt.html
+//! [`Stream`]: ../trait.Stream.html
+//! [`StreamExt`]: ../trait.StreamExt.html
 
 use std::pin::Pin;
 use std::task::{Context, Poll};
@@ -27,24 +27,26 @@ use crate::{
     socket::{Broker, Multipart, MultipartIter, SocketBuilder},
     RecvError, SendError, Sink, SocketError, Stream,
 };
-use zmq::{SocketType, Message};
+use zmq::{Message, SocketType};
 
 /// Create a ZMQ socket with ROUTER type
-pub fn router<I: Iterator<Item=T> + Unpin, T: Into<Message>>(endpoint: &str) -> Result<SocketBuilder<'_, Router<I, T>>, SocketError> {
+pub fn router<I: Iterator<Item = T> + Unpin, T: Into<Message>>(
+    endpoint: &str,
+) -> Result<SocketBuilder<'_, Router<I, T>>, SocketError> {
     Ok(SocketBuilder::new(SocketType::ROUTER, endpoint))
 }
 
 /// The async wrapper of ZMQ socket with ROUTER type
-pub struct Router<I: Iterator<Item=T> + Unpin, T: Into<Message>>(Broker<I, T>);
+pub struct Router<I: Iterator<Item = T> + Unpin, T: Into<Message>>(Broker<I, T>);
 
-impl<I: Iterator<Item=T> + Unpin, T: Into<Message>> Router<I, T> {
+impl<I: Iterator<Item = T> + Unpin, T: Into<Message>> Router<I, T> {
     /// Represent as `Socket` from zmq crate in case you want to call its methods.
     pub fn as_raw_socket(&self) -> &zmq::Socket {
         &self.0.socket.as_socket()
     }
 }
 
-impl<I: Iterator<Item=T> + Unpin, T: Into<Message>> Sink<MultipartIter<I, T>> for Router<I, T> {
+impl<I: Iterator<Item = T> + Unpin, T: Into<Message>> Sink<MultipartIter<I, T>> for Router<I, T> {
     type Error = SendError;
 
     fn poll_ready(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
@@ -69,7 +71,7 @@ impl<I: Iterator<Item=T> + Unpin, T: Into<Message>> Sink<MultipartIter<I, T>> fo
     }
 }
 
-impl<I: Iterator<Item=T> + Unpin, T: Into<Message>> Stream for Router<I, T> {
+impl<I: Iterator<Item = T> + Unpin, T: Into<Message>> Stream for Router<I, T> {
     type Item = Result<Multipart, RecvError>;
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
@@ -79,7 +81,7 @@ impl<I: Iterator<Item=T> + Unpin, T: Into<Message>> Stream for Router<I, T> {
     }
 }
 
-impl<I: Iterator<Item=T> + Unpin, T: Into<Message>> From<zmq::Socket> for Router<I, T> {
+impl<I: Iterator<Item = T> + Unpin, T: Into<Message>> From<zmq::Socket> for Router<I, T> {
     fn from(socket: zmq::Socket) -> Self {
         Self(Broker {
             socket: ZmqSocket::from(socket),

@@ -47,16 +47,5 @@ let sub = subscribe("inproc://example")?.with_context(&context).connect()?;
 
 To learn more about each socket type usage. See [modules](#modules) below.
 
-### Prelude
-
-Prelude module provides some common types, traits and their methods. This crate also re-export
-so it can be easier for you to import them.
-
-Another common issue when people adopting a library is to deal with its error handling flow.
-To prevent introducing more overhead, `async_zmq` uses the exact same [`Result`]/[`Error`] type
-in [`zmq`] crate and re-export them.
-
-[`Result`]: prelude/type.Result.html
-[`Error`]: prelude/type.Error.html
 [`zmq`]: https://crates.io/crates/zmq
 [`async-std`]: https://crates.io/crates/async-std

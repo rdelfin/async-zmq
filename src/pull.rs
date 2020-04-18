@@ -26,8 +26,8 @@
 //!
 //! [`push`]: ../push/index.html
 //! [`pull`]: fn.pull.html
-//! [`Stream`]: ../prelude/trait.Stream.html
-//! [`StreamExt`]: ../prelude/trait.StreamExt.html
+//! [`Stream`]: ../trait.Stream.html
+//! [`StreamExt`]: ../trait.StreamExt.html
 
 use std::pin::Pin;
 use std::task::{Context, Poll};

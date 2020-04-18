@@ -31,8 +31,8 @@
 //! [`xpublish`]: ../xpublish/index.html
 //! [`publish`]: ../publish/index.html
 //! [`subscribe`]: fn.subscribe.html
-//! [`Stream`]: ../prelude/trait.Stream.html
-//! [`StreamExt`]: ../prelude/trait.StreamExt.html
+//! [`Stream`]: ../trait.Stream.html
+//! [`StreamExt`]: ../trait.StreamExt.html
 
 use std::pin::Pin;
 use std::task::{Context, Poll};

@@ -21,13 +21,13 @@
 //!
 //! [`pull`]: ../pull/index.html
 //! [`push`]: fn.push.html
-//! [`Sink`]: ../prelude/trait.Sink.html
-//! [`SinkExt`]: ../prelude/trait.SinkExt.html
+//! [`Sink`]: ../trait.Sink.html
+//! [`SinkExt`]: ../trait.SinkExt.html
 
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
-use zmq::{SocketType, Message};
+use zmq::{Message, SocketType};
 
 use crate::{
     reactor::{AsRawSocket, ZmqSocket},
@@ -36,21 +36,23 @@ use crate::{
 };
 
 /// Create a ZMQ socket with PUSH type
-pub fn push<I: Iterator<Item=T> + Unpin, T: Into<Message>>(endpoint: &str) -> Result<SocketBuilder<'_, Push<I, T>>, SocketError> {
+pub fn push<I: Iterator<Item = T> + Unpin, T: Into<Message>>(
+    endpoint: &str,
+) -> Result<SocketBuilder<'_, Push<I, T>>, SocketError> {
     Ok(SocketBuilder::new(SocketType::PUSH, endpoint))
 }
 
 /// The async wrapper of ZMQ socket with PUSH type
-pub struct Push<I: Iterator<Item=T> + Unpin, T: Into<Message>>(Sender<I, T>);
+pub struct Push<I: Iterator<Item = T> + Unpin, T: Into<Message>>(Sender<I, T>);
 
-impl<I: Iterator<Item=T> + Unpin, T: Into<Message>> Push<I, T> {
+impl<I: Iterator<Item = T> + Unpin, T: Into<Message>> Push<I, T> {
     /// Represent as `Socket` from zmq crate in case you want to call its methods.
     pub fn as_raw_socket(&self) -> &zmq::Socket {
         &self.0.socket.as_socket()
     }
 }
 
-impl<I: Iterator<Item=T> + Unpin, T: Into<Message>> Sink<MultipartIter<I, T>> for Push<I, T> {
+impl<I: Iterator<Item = T> + Unpin, T: Into<Message>> Sink<MultipartIter<I, T>> for Push<I, T> {
     type Error = SendError;
 
     fn poll_ready(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
@@ -75,7 +77,7 @@ impl<I: Iterator<Item=T> + Unpin, T: Into<Message>> Sink<MultipartIter<I, T>> fo
     }
 }
 
-impl<I: Iterator<Item=T> + Unpin, T: Into<Message>> From<zmq::Socket> for Push<I, T> {
+impl<I: Iterator<Item = T> + Unpin, T: Into<Message>> From<zmq::Socket> for Push<I, T> {
     fn from(socket: zmq::Socket) -> Self {
         Self(Sender {
             socket: ZmqSocket::from(socket),
