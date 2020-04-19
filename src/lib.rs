@@ -1,8 +1,7 @@
 //! # Async version for ZeroMQ bindings
 //!
-//! This is high-level bindings for [`zmq`] in asynchronous manner. Crate itself uses some modules from
-//! [`async-std`], but it should also work on any other async reactor. The goal for this project
-//! is providing simple interface that is compatible with any async executor and reactor.
+//! Async-zmq is high-level bindings for [`zmq`] in asynchronous manner which is compatible to **every** async runtime.
+//! No need for configuring or tuning features. Just plug in and see how it works!
 //!
 //! ## Usage
 //!
