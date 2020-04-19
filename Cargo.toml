@@ -18,22 +18,7 @@ futures = "0.3.4"
 slab = "0.4.2"
 thiserror = "1.0"
 once_cell = "1.3.1"
-tokio = { version = "0.2", features = ["io-driver"], optional = true }
-async-std = { version = "1.5", optional = true }
-
-[features]
-default = [ "rt-async" ]
-rt-tokio = [ "tokio" ]
-rt-async = [ "async-std" ]
 
 [dev-dependencies]
 tokio = { version = "0.2", features = ["full"] }
 async-std = { version = "1.5", features = ["attributes"] }
-
-[[example]]
-name = "reply"
-required-features = ["rt-tokio"]
-
-[[example]]
-name = "request"
-required-features = ["rt-tokio"]
