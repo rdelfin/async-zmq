@@ -7,8 +7,8 @@ use mio::{self, Evented};
 use once_cell::sync::Lazy;
 use slab::Slab;
 
-use async_std::io;
-use async_std::task::{Context, Poll, Waker};
+use std::io;
+use std::task::{Context, Poll, Waker};
 
 /// Data associated with a registered I/O handle.
 #[derive(Debug)]
