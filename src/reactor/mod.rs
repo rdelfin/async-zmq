@@ -7,6 +7,7 @@ use crate::socket::{Multipart, MultipartIter};
 
 use futures::ready;
 use std::task::{Context, Poll};
+use std::io::{self, ErrorKind};
 use zmq::Error;
 
 /// Trait to get the raw zmq socket.
@@ -18,11 +19,11 @@ pub trait AsRawSocket {
 pub(crate) type ZmqSocket = Watcher<evented::ZmqSocket>;
 
 impl ZmqSocket {
-    fn poll_event(&self, event: zmq::PollEvents) -> Poll<Result<(), Error>> {
+    fn poll_event(&self, event: zmq::PollEvents) -> Result<(), io::Error> {
         if self.as_socket().get_events()?.contains(event) {
-            Poll::Ready(Ok(()))
+            Ok(())
         } else {
-            Poll::Ready(Err(Error::EAGAIN))
+            Err(io::Error::new(ErrorKind::WouldBlock,Error::EAGAIN))
         }
     }
 
@@ -31,8 +32,10 @@ impl ZmqSocket {
         cx: &mut Context<'_>,
         buffer: &mut MultipartIter<I, T>,
     ) -> Poll<Result<(), Error>> {
-        ready!(self.poll_write_ready(cx));
-        ready!(self.poll_event(zmq::POLLOUT))?;
+        let _ = ready!(self.poll_write_with(cx, |_| {
+            self.poll_event(zmq::POLLOUT)
+        }));
+        //ready!()?;
 
         let mut buffer = buffer.0.by_ref().peekable();
         while let Some(msg) = buffer.next() {
@@ -52,8 +55,9 @@ impl ZmqSocket {
     }
 
     pub(crate) fn recv(&self, cx: &mut Context<'_>) -> Poll<Result<Multipart, Error>> {
-        ready!(self.poll_read_ready(cx));
-        ready!(self.poll_event(zmq::POLLIN))?;
+        let _ = ready!(self.poll_read_with(cx, |_| {
+            self.poll_event(zmq::POLLIN)
+        }));
 
         let mut buffer = Vec::new();
         let mut more = true;
