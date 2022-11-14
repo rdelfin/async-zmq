@@ -1,6 +1,6 @@
 [package]
 name = "async_zmq"
-version = "0.3.2"
+version = "0.3.3"
 authors = ["Yu-Wei Wu <wusyong9104@gmail.com>", "Ricardo Delfin <me@rdelfin.com>"]
 edition = "2021"
 description = "Async version for ZeroMQ bindings"
