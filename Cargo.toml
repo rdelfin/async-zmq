@@ -8,7 +8,7 @@ keywords = ["async", "bindings", "protocol", "zmq"]
 categories = ["Asynchronous", "API bindings", "Concurrency", "Network programming"]
 license = "MIT/Apache-2.0"
 readme = "README.md"
-repository = "https://github.com/wusyong/async-zmq"
+repository = "https://github.com/rdelfin/async-zmq"
 documentation = "https://docs.rs/async-zmq"
 
 [dependencies]
