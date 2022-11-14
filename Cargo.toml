@@ -2,7 +2,7 @@
 name = "async_zmq"
 version = "0.3.2"
 authors = ["Yu-Wei Wu <wusyong9104@gmail.com>"]
-edition = "2018"
+edition = "2021"
 description = "Async version for ZeroMQ bindings"
 keywords = ["async", "bindings", "protocol", "zmq"]
 categories = ["Asynchronous", "API bindings", "Concurrency", "Network programming"]
