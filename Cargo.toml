@@ -1,11 +1,19 @@
 [package]
 name = "async_zmq"
 version = "0.3.3"
-authors = ["Yu-Wei Wu <wusyong9104@gmail.com>", "Ricardo Delfin <me@rdelfin.com>"]
+authors = [
+    "Yu-Wei Wu <wusyong9104@gmail.com>",
+    "Ricardo Delfin <me@rdelfin.com>",
+]
 edition = "2021"
 description = "Async version for ZeroMQ bindings"
 keywords = ["async", "bindings", "protocol", "zmq"]
-categories = ["asynchronous", "api-bindings", "concurrency", "network-programming"]
+categories = [
+    "asynchronous",
+    "api-bindings",
+    "concurrency",
+    "network-programming",
+]
 license = "MIT/Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/rdelfin/async-zmq"
@@ -13,15 +21,15 @@ documentation = "https://docs.rs/async-zmq"
 
 [dependencies]
 mio = "0.6"
-zmq = "0.9"
+zmq = "0.10"
 futures = "0.3"
 slab = "0.4"
 thiserror = "1.0"
-once_cell = "1.15"
+once_cell = "1.18"
 
 [features]
-vendored = ["zmq/vendored"]
+default = []
 
 [dev-dependencies]
-tokio = { version = "1.21.2", features = ["full"] }
-async-std = { version = "1.5", features = ["attributes"] }
+tokio = { version = "1.29", features = ["full"] }
+async-std = { version = "1.12", features = ["attributes"] }
