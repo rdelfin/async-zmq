@@ -5,7 +5,7 @@
 [crates-badge]: https://img.shields.io/crates/v/async-zmq
 [crates-url]: https://crates.io/crates/async_zmq
 [license-badge]: https://img.shields.io/crates/l/async-zmq
-[build-bade]: https://img.shields.io/github/workflow/status/wusyong/async-zmq/Main
+[build-bade]: https://img.shields.io/github/actions/workflow/status/rdelfin/async-zmq/main.yml?branch=main
 
 Async-zmq is high-level bindings for [`zmq`] in asynchronous manner which is compatible to **every** async runtime.
 No need for configuring or tuning features. Just plug in and see how it works!
