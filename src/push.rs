@@ -48,7 +48,7 @@ pub struct Push<I: Iterator<Item = T> + Unpin, T: Into<Message>>(Sender<I, T>);
 impl<I: Iterator<Item = T> + Unpin, T: Into<Message>> Push<I, T> {
     /// Represent as `Socket` from zmq crate in case you want to call its methods.
     pub fn as_raw_socket(&self) -> &zmq::Socket {
-        &self.0.socket.as_socket()
+        self.0.socket.as_socket()
     }
 }
 

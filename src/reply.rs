@@ -80,14 +80,14 @@ impl<I: Iterator<Item = T> + Unpin, T: Into<Message>> Reply<I, T> {
         msg: S,
     ) -> Result<(), RequestReplyError> {
         let mut msg = msg.into();
-        let res = poll_fn(move |cx| self.inner.socket.send(cx, &mut msg)).await?;
+        poll_fn(move |cx| self.inner.socket.send(cx, &mut msg)).await?;
         self.received.store(false, Ordering::Relaxed);
-        Ok(res)
+        Ok(())
     }
 
     /// Represent as `Socket` from zmq crate in case you want to call its methods.
     pub fn as_raw_socket(&self) -> &zmq::Socket {
-        &self.inner.socket.as_socket()
+        self.inner.socket.as_socket()
     }
 }
 

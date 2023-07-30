@@ -42,7 +42,7 @@ pub struct Router<I: Iterator<Item = T> + Unpin, T: Into<Message>>(Broker<I, T>)
 impl<I: Iterator<Item = T> + Unpin, T: Into<Message>> Router<I, T> {
     /// Represent as `Socket` from zmq crate in case you want to call its methods.
     pub fn as_raw_socket(&self) -> &zmq::Socket {
-        &self.0.socket.as_socket()
+        self.0.socket.as_socket()
     }
 }
 
