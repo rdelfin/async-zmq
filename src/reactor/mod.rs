@@ -2,12 +2,12 @@
 pub(crate) mod evented;
 mod watcher;
 
-pub(crate) use watcher::Watcher;
 use crate::socket::{Multipart, MultipartIter};
+pub(crate) use watcher::Watcher;
 
 use futures::ready;
-use std::task::{Context, Poll};
 use std::io::{self, ErrorKind};
+use std::task::{Context, Poll};
 use zmq::Error;
 
 /// Trait to get the raw zmq socket.
@@ -23,7 +23,7 @@ impl ZmqSocket {
         if self.as_socket().get_events()?.contains(event) {
             Ok(())
         } else {
-            Err(io::Error::new(ErrorKind::WouldBlock,Error::EAGAIN))
+            Err(io::Error::new(ErrorKind::WouldBlock, Error::EAGAIN))
         }
     }
 
@@ -32,22 +32,20 @@ impl ZmqSocket {
         cx: &mut Context<'_>,
         buffer: &mut MultipartIter<I, T>,
     ) -> Poll<Result<(), Error>> {
-        let _ = ready!(self.poll_write_with(cx, |_| {
-            self.poll_event(zmq::POLLOUT)
-        }));
+        let _ = ready!(self.poll_write_with(cx, |_| { self.poll_event(zmq::POLLOUT) }));
         //ready!()?;
 
         let mut buffer = buffer.0.by_ref().peekable();
         while let Some(msg) = buffer.next() {
             let mut flags = zmq::DONTWAIT;
-            if let Some(_) = buffer.peek() {
+            if buffer.peek().is_some() {
                 flags |= zmq::SNDMORE;
             }
 
             match self.as_socket().send(msg, flags) {
                 Ok(_) => {}
                 Err(Error::EAGAIN) => return Poll::Pending,
-                Err(e) => return Poll::Ready(Err(e.into())),
+                Err(e) => return Poll::Ready(Err(e)),
             }
         }
 
@@ -55,9 +53,7 @@ impl ZmqSocket {
     }
 
     pub(crate) fn recv(&self, cx: &mut Context<'_>) -> Poll<Result<Multipart, Error>> {
-        let _ = ready!(self.poll_read_with(cx, |_| {
-            self.poll_event(zmq::POLLIN)
-        }));
+        let _ = ready!(self.poll_read_with(cx, |_| { self.poll_event(zmq::POLLIN) }));
 
         let mut buffer = Vec::new();
         let mut more = true;
@@ -69,7 +65,7 @@ impl ZmqSocket {
                     more = msg.get_more();
                     buffer.push(msg);
                 }
-                Err(e) => return Poll::Ready(Err(e.into())),
+                Err(e) => return Poll::Ready(Err(e)),
             }
         }
 

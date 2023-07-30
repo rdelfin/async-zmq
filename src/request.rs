@@ -65,9 +65,9 @@ impl<I: Iterator<Item = T> + Unpin, T: Into<Message>> Request<I, T> {
         msg: S,
     ) -> Result<(), RequestReplyError> {
         let mut msg = msg.into();
-        let res = poll_fn(move |cx| self.inner.socket.send(cx, &mut msg)).await?;
+        poll_fn(move |cx| self.inner.socket.send(cx, &mut msg)).await?;
         self.received.store(false, Ordering::Relaxed);
-        Ok(res)
+        Ok(())
     }
 
     /// Receive reply from REP/ROUTER socket. [`send`](#method.send) must be called first in order to receive reply.
@@ -79,6 +79,6 @@ impl<I: Iterator<Item = T> + Unpin, T: Into<Message>> Request<I, T> {
 
     /// Represent as `Socket` from zmq crate in case you want to call its methods.
     pub async fn as_raw_socket(&self) -> &zmq::Socket {
-        &self.inner.socket.as_socket()
+        self.inner.socket.as_socket()
     }
 }

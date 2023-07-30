@@ -110,7 +110,7 @@ impl<I: Iterator<Item = T> + Unpin, T: Into<Message>> Sink<MultipartIter<I, T>> 
     }
 
     fn start_send(self: Pin<&mut Self>, item: MultipartIter<I, T>) -> Result<(), Self::Error> {
-        self.get_mut().buffer = Some(item.into());
+        self.get_mut().buffer = Some(item);
         Ok(())
     }
 

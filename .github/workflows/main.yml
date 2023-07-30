@@ -3,6 +3,11 @@ name: Main
 on:
   pull_request:
   push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   test:
@@ -16,6 +21,7 @@ jobs:
       with:
         profile: minimal
         toolchain: stable
+        components: clippy
         override: true
 
     - name: Install ZeroMQ
@@ -30,3 +36,14 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: test
+
+    - name: cargo doc
+      uses: actions-rs/cargo@v1
+      with:
+        command: doc
+
+    - name: clippy check
+      uses: actions-rs/clippy-check@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        args: --all-features -- -D warnings
