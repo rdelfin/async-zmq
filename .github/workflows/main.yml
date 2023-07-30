@@ -27,10 +27,10 @@ jobs:
     - name: Install ZeroMQ
       run: sudo apt update && sudo apt install -y --no-install-recommends libzmq3-dev
 
-    - name: cargo build
+    - name: cargo check
       uses: actions-rs/cargo@v1
       with:
-        command: build
+        command: check
 
     - name: cargo test
       uses: actions-rs/cargo@v1
